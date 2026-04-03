@@ -2,10 +2,28 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
-import logic_clientes, logic_faltantes, logic_domicilios, logic_informe
+import logic_clientes, logic_faltantes, logic_domicilios, logic_informe, logic_seguridad
 import os
 import json
 import hashlib
+
+# 🎨 ESTILOS PERSONALIZADOS
+st.markdown("""
+<style>
+
+/* Nombre archivo */
+[data-testid="stFileUploader"] span {
+    color: #374151 !important;
+    font-weight: 500;
+}
+
+/* Tamaño archivo */
+[data-testid="stFileUploader"] small {
+    color: #6B7280 !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 # --- CONFIGURACION ---
 st.set_page_config(
@@ -229,27 +247,34 @@ def calcular_total_mes(datos_mensuales):
     pedidos_por_dia = datos_mensuales.get("pedidos_por_dia", {})
     return sum(pedidos_por_dia.values())
 
-# --- CSS DARK MINIMALIST DASHBOARD ---
+# --- CSS LIGHT CORPORATE DASHBOARD ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-     .title-main {
-    text-shadow: 
-        0 1px 0 rgba(255,255,255,0.04),
-        0 6px 18px rgba(0,0,0,0.45);
-}
+    /* ===== MAIN BACKGROUND ===== */
+    .stApp {
+        background: #F5F6F8 !important;
+        font-family: 'Inter', sans-serif !important;
+    }
 
-.title-main::after {
-    content: "";
-    display: block;
-    width: 350px;
-    height: 2px;
-    margin: 8px auto 0 auto;
-    background: linear-gradient(90deg, transparent, #c6a769, transparent);
-    opacity: 0.9;
-}
-    
+    /* Remove default Streamlit styling */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+
+    /* ===== FULL WIDTH LAYOUT ===== */
+    .block-container {
+        padding: 1.5rem 2rem !important;
+        max-width: 100% !important;
+    }
+
+    @media (min-width: 1400px) {
+        .block-container {
+            padding: 1.5rem 4rem !important;
+        }
+    }
+
     /* ===== LOADING SCREEN ===== */
     .loading-screen {
         position: fixed;
@@ -257,142 +282,109 @@ st.markdown("""
         left: 0;
         width: 100vw;
         height: 100vh;
-        background: #012E40;
+        background: #F5F6F8;
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 9999;
         animation: fadeOut 0.5s ease-out 1.5s forwards;
     }
-    
+
     .loading-logo {
         animation: microZoom 2s ease-in-out infinite;
     }
-    
+
     @keyframes microZoom {
         0%, 100% { transform: scale(1); }
         50% { transform: scale(1.05); }
     }
-    
+
     @keyframes fadeOut {
         to { opacity: 0; visibility: hidden; }
     }
-    
-    /* ===== MAIN BACKGROUND WITH GRADIENT GLOW ===== */
-    .stApp {
-        background: 
-            radial-gradient(ellipse 160% 130% at 50% -10%, 
-                rgba(120, 150, 255, 0.65) 0%, 
-                rgba(99, 130, 255, 0.30) 35%, 
-                rgba(79, 110, 230, 0.12) 60%,
-                transparent 90%),
-            linear-gradient(180deg, 
-                #2a3260 0%, 
-                #20295a 20%, 
-                #18224a 50%, 
-                #131c3f 100%) !important;
-        font-family: 'Inter', sans-serif !important;
-    }
-    
-    /* Remove default Streamlit styling */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    
-    /* ===== FULL WIDTH LAYOUT ===== */
-    .block-container {
-        padding: 1.5rem 2rem !important;
-        max-width: 100% !important;
-    }
-    
-    @media (min-width: 1400px) {
-        .block-container {
-            padding: 1.5rem 4rem !important;
-        }
-    }
-    
+
     /* ===== HEADER ===== */
     .header-container {
-        background: linear-gradient(135deg, 
-            rgba(35, 45, 85, 0.95) 0%, 
-            rgba(25, 35, 60, 0.98) 50%, 
-            rgba(20, 28, 50, 0.95) 100%);
+        background: #FFFFFF;
         border-radius: 16px;
         padding: 24px 32px;
         margin-bottom: 24px;
-        border: 1px solid rgba(99, 130, 255, 0.20);
-        border-top: 2px solid rgba(99, 130, 255, 0.50);
+        border: 1px solid #E5E7EB;
+        border-bottom: 3px solid #3B82F6;
         display: flex;
         align-items: center;
         justify-content: space-between;
         flex-wrap: wrap;
         gap: 16px;
-        box-shadow: 
-            0 4px 30px rgba(99, 130, 255, 0.15),
-            0 1px 3px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     }
-    
+
     .header-left {
         display: flex;
         align-items: center;
         gap: 20px;
     }
-    
+
     .header-logo {
         height: 50px;
         width: auto;
     }
-    
+
     .header-text {
         display: flex;
         flex-direction: column;
         gap: 4px;
     }
-    
+
     .title-main {
-        color: #FFFFFF;
-        font-weight: 600;
+        color: #111827;
+        font-weight: 700;
         font-size: 1.5em;
         margin: 0;
-        letter-spacing: 0.5px;
-        text-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
+        letter-spacing: 0.3px;
     }
+
+    .title-main::after {
+        content: "";
+        display: block;
+        width: 350px;
+        height: 2px;
+        margin: 8px auto 0 auto;
+        background: linear-gradient(90deg, transparent, #3B82F6, transparent);
+        opacity: 0.7;
+    }
+
     .title-main,
     .title-main span {
-    color: #FFFFFF !important;
+        color: #111827 !important;
     }
+
     .subtitle-main {
-        color: #C7D2FE;
+        color: #6B7280;
         font-size: 0.9em;
         margin: 0;
         font-weight: 400;
     }
-    
+
     .header-divider {
         height: 2px;
-        background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.6), transparent);
+        background: linear-gradient(90deg, transparent, #3B82F6, transparent);
         margin-top: 16px;
-        opacity: 0.6;
+        opacity: 0.3;
     }
-    
+
     /* ===== CARDS ===== */
     .glass-card {
-        background: linear-gradient(145deg, 
-            rgba(45, 55, 95, 0.55) 0%, 
-            rgba(28, 38, 70, 0.85) 40%, 
-            rgba(20, 30, 60, 0.90) 100%);
-        border-radius: 14px;
+        background: #FFFFFF;
+        border-radius: 12px;
         padding: 24px;
         margin-bottom: 20px;
-        box-shadow: 
-            0 4px 25px rgba(0, 0, 0, 0.35),
-            0 0 25px rgba(99, 130, 255, 0.12);
-        border: 1px solid rgba(99, 130, 255, 0.12);
-        border-top: 2px solid rgba(99, 130, 255, 0.30);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        border: 1px solid #E5E7EB;
     }
-    
+
     .card-title {
-        color: #E5E7EB;
+        color: #374151;
         font-weight: 600;
         font-size: 0.95em;
         text-transform: uppercase;
@@ -402,198 +394,208 @@ st.markdown("""
         gap: 10px;
         margin-bottom: 16px;
         padding-bottom: 12px;
-        border-bottom: 1px solid rgba(139, 92, 246, 0.15);
+        border-bottom: 1px solid #F3F4F6;
     }
-    
+
     .card-icon {
         font-size: 1.1em;
     }
-    
-    /* ===== BUTTONS ===== */
+
+    /* ===== BUTTONS — BASE ===== */
     div.stButton > button {
-        background: linear-gradient(145deg, rgba(35, 45, 75, 0.8), rgba(20, 28, 50, 0.95)) !important;
-        border-radius: 8px !important;
-        height: 52px !important;
+        border-radius: 999px !important;
+        height: 48px !important;
         font-weight: 600 !important;
-        font-size: 0.9em !important;
+        font-size: 0.85em !important;
         text-transform: uppercase !important;
         letter-spacing: 1px !important;
-        color: #E5E7EB !important;
-        border: 1px solid rgba(99, 130, 255, 0.25) !important;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+        color: #FFFFFF !important;
+        border: none !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12) !important;
         transition: all 0.2s ease !important;
+        background: #6B7280 !important;
     }
-    
+
     div.stButton > button:hover {
-        border-color: #6382FF !important;
-        box-shadow: 0 0 15px rgba(99, 130, 255, 0.35), 0 0 0 1px #6382FF !important;
+        filter: brightness(0.92) !important;
         transform: translateY(-1px) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
     }
-    
+
     div.stButton > button:active {
         transform: translateY(0) !important;
+        filter: brightness(0.88) !important;
     }
-    
-    /* Processing state */
-    div.stButton > button:disabled {
-        opacity: 0.6 !important;
-        cursor: not-allowed !important;
+
+    /* CLIENTES — col 1 */
+    [data-testid="column"]:nth-child(1) div.stButton > button {
+        background: #4CAF50 !important;
     }
-    
-    /* Link Button (Planilla MEC) */
-    .stLinkButton > a {
-        background: linear-gradient(145deg, rgba(35, 45, 75, 0.8), rgba(20, 28, 50, 0.95)) !important;
-        border-radius: 8px !important;
-        height: 52px !important;
+
+    /* PERSONAL SEGURIDAD — col 2 */
+    [data-testid="column"]:nth-child(2) div.stButton > button {
+        background: #6366F1 !important;
+    }
+
+    /* FALTANTES — col 3 */
+    [data-testid="column"]:nth-child(3) div.stButton > button {
+        background: #3B82F6 !important;
+    }
+
+    /* DOMICILIOS — col 4 */
+    [data-testid="column"]:nth-child(4) div.stButton > button {
+        background: #F59E0B !important;
+    }
+
+    /* INFORME — col 5 */
+    [data-testid="column"]:nth-child(5) div.stButton > button {
+        background: #F97316 !important;
+    }
+
+    /* Link Button (Planilla MEC) — col 6 */
+    [data-testid="column"]:nth-child(6) .stLinkButton > a {
+        background: #F3F4F6 !important;
+        border-radius: 999px !important;
+        height: 48px !important;
         font-weight: 600 !important;
-        font-size: 0.9em !important;
+        font-size: 0.85em !important;
         text-transform: uppercase !important;
         letter-spacing: 1px !important;
-        color: #E5E7EB !important;
-        border: 1px solid rgba(99, 130, 255, 0.25) !important;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+        color: #374151 !important;
+        border: 1px solid #D1D5DB !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06) !important;
         transition: all 0.2s ease !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
         text-decoration: none !important;
     }
-    
-    .stLinkButton > a:hover {
-        border-color: #6382FF !important;
-        box-shadow: 0 0 15px rgba(99, 130, 255, 0.35), 0 0 0 1px #6382FF !important;
+
+    [data-testid="column"]:nth-child(6) .stLinkButton > a:hover {
+        filter: brightness(0.96) !important;
         transform: translateY(-1px) !important;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.10) !important;
         text-decoration: none !important;
     }
-    
+
     /* ===== FILE UPLOADER ===== */
     [data-testid="stFileUploader"] {
-        background: linear-gradient(145deg, 
-            rgba(30, 27, 55, 0.5) 0%, 
-            rgba(17, 24, 39, 0.7) 100%);
+        background: #FFFFFF;
         border-radius: 10px;
         padding: 16px;
-        border: 1px dashed rgba(139, 92, 246, 0.3);
+        border: 1.5px dashed #D1D5DB;
         transition: all 0.2s ease;
     }
-    
+
     [data-testid="stFileUploader"]:hover {
-        border-color: #8B5CF6;
-        background: linear-gradient(145deg, 
-            rgba(139, 92, 246, 0.1) 0%, 
-            rgba(17, 24, 39, 0.8) 100%);
+        border-color: #3B82F6;
+        background: #EFF6FF;
     }
-    
+
     [data-testid="stFileUploader"] label {
-        color: #9CA3AF !important;
+        color: #6B7280 !important;
         font-size: 0.85em !important;
     }
-    
+
     [data-testid="stFileUploader"] p {
-        color: #9CA3AF !important;
-    }
-    
-    [data-testid="stFileUploader"] span {
-        color: #E5E7EB !important;
-    }
-    
-    /* File uploader dropzone styling */
-    [data-testid="stFileUploaderDropzone"] {
-        background: linear-gradient(145deg, 
-            rgba(30, 27, 55, 0.6) 0%, 
-            rgba(17, 24, 39, 0.8) 100%) !important;
-        border: none !important;
-    }
-    
-    /* Style the cloud icon and text */
-    [data-testid="stFileUploaderDropzone"] svg {
-        color: #8B5CF6 !important;
-        opacity: 0.7;
-    }
-    
-    [data-testid="stFileUploaderDropzone"] > div {
-        color: #9CA3AF !important;
-    }
-    
-    [data-testid="stFileUploaderDropzone"] small {
         color: #6B7280 !important;
     }
-    
+
+    [data-testid="stFileUploader"] span {
+        color: #374151 !important;
+    }
+
+    [data-testid="stFileUploaderDropzone"] {
+        background: #FFFFFF !important;
+        border: none !important;
+    }
+
+    [data-testid="stFileUploaderDropzone"] svg {
+        color: #3B82F6 !important;
+        opacity: 0.7;
+    }
+
+    [data-testid="stFileUploaderDropzone"] > div {
+        color: #6B7280 !important;
+    }
+
+    [data-testid="stFileUploaderDropzone"] small {
+        color: #9CA3AF !important;
+    }
+
     [data-testid="stFileUploader"] button {
-        background: linear-gradient(145deg, rgba(88, 28, 135, 0.4), rgba(17, 24, 39, 0.9)) !important;
-        color: #E5E7EB !important;
-        border: 1px solid rgba(139, 92, 246, 0.3) !important;
+        background: #EFF6FF !important;
+        color: #1D4ED8 !important;
+        border: 1px solid #BFDBFE !important;
         border-radius: 6px !important;
     }
-    
+
     [data-testid="stFileUploader"] button:hover {
-        background: linear-gradient(145deg, rgba(139, 92, 246, 0.3), rgba(17, 24, 39, 0.9)) !important;
-        border-color: #8B5CF6 !important;
+        background: #DBEAFE !important;
+        border-color: #3B82F6 !important;
     }
-    
+
     /* ===== TEXT AREA ===== */
     .stTextArea textarea {
-        background: #111827 !important;
-        border: 1px solid #1F2937 !important;
+        background: #FFFFFF !important;
+        border: 1px solid #D1D5DB !important;
         border-radius: 8px !important;
-        color: #E5E7EB !important;
+        color: #111827 !important;
         font-family: 'Inter', sans-serif !important;
         font-size: 0.9em !important;
         padding: 12px !important;
     }
-    
+
     .stTextArea textarea:focus {
-        border-color: #B8964A !important;
-        box-shadow: 0 0 0 1px #B8964A !important;
+        border-color: #3B82F6 !important;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15) !important;
     }
-    
+
     .stTextArea textarea::placeholder {
-        color: #6B7280 !important;
+        color: #9CA3AF !important;
     }
-    
+
     .stTextArea label {
-        color: #E5E7EB !important;
+        color: #374151 !important;
         font-weight: 500 !important;
         font-size: 0.95em !important;
     }
-    
+
     /* ===== METRICS / COUNTERS ===== */
     .metric-card {
-        background: linear-gradient(145deg, 
-            rgba(30, 27, 55, 0.5) 0%, 
-            rgba(17, 24, 39, 0.9) 100%);
+        background: #FFFFFF;
         border-radius: 12px;
         padding: 20px;
         text-align: center;
-        border: 1px solid rgba(139, 92, 246, 0.15);
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        border: 1px solid #E5E7EB;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
     }
-    
+
     .metric-value {
         font-family: 'Inter', sans-serif;
         font-weight: 700;
         font-size: 2.5em;
-        color: #F1F5F9;
+        color: #111827;
         margin: 0;
     }
-    
+
     .metric-value-gold {
-        color: #A78BFA;
+        color: #1D4ED8;
     }
-    
+
     .metric-label {
         font-family: 'Inter', sans-serif;
         font-weight: 500;
         font-size: 0.8em;
-        color: #A5B4FC;
+        color: #6B7280;
         text-transform: uppercase;
         letter-spacing: 1px;
         margin-top: 8px;
     }
-    
+
     .reset-btn {
         background: transparent;
-        border: 1px solid rgba(139, 92, 246, 0.2);
+        border: 1px solid #E5E7EB;
         border-radius: 6px;
         color: #9CA3AF;
         padding: 4px 8px;
@@ -602,89 +604,90 @@ st.markdown("""
         transition: all 0.2s ease;
         margin-left: 8px;
     }
-    
+
     .reset-btn:hover {
-        border-color: #8B5CF6;
-        color: #8B5CF6;
+        border-color: #3B82F6;
+        color: #3B82F6;
     }
-    
+
     /* ===== CHARTS ===== */
     [data-testid="stVegaLiteChart"] {
         background: transparent;
         border-radius: 8px;
     }
-    
+
     /* ===== ALERTS ===== */
     .stSuccess {
-        background: rgba(34, 197, 94, 0.1) !important;
+        background: rgba(34, 197, 94, 0.08) !important;
         border: 1px solid rgba(34, 197, 94, 0.3) !important;
         border-radius: 8px !important;
-        color: #22C55E !important;
+        color: #15803D !important;
     }
-    
+
     .stInfo {
-        background: rgba(59, 130, 246, 0.1) !important;
+        background: rgba(59, 130, 246, 0.08) !important;
         border: 1px solid rgba(59, 130, 246, 0.3) !important;
         border-radius: 8px !important;
-        color: #3B82F6 !important;
+        color: #1D4ED8 !important;
     }
-    
+
     .stWarning {
-        background: rgba(234, 179, 8, 0.1) !important;
+        background: rgba(234, 179, 8, 0.08) !important;
         border: 1px solid rgba(234, 179, 8, 0.3) !important;
         border-radius: 8px !important;
-        color: #EAB308 !important;
+        color: #B45309 !important;
     }
-    
+
     .stError {
-        background: rgba(239, 68, 68, 0.1) !important;
+        background: rgba(239, 68, 68, 0.08) !important;
         border: 1px solid rgba(239, 68, 68, 0.3) !important;
         border-radius: 8px !important;
-        color: #EF4444 !important;
+        color: #DC2626 !important;
     }
-    
+
     /* ===== DOWNLOAD BUTTON ===== */
     .stDownloadButton > button {
-        background: linear-gradient(135deg, #8B5CF6, #7C3AED) !important;
+        background: linear-gradient(135deg, #3B82F6, #1D4ED8) !important;
         border: none !important;
-        border-radius: 8px !important;
+        border-radius: 999px !important;
         color: white !important;
         font-weight: 600 !important;
         text-transform: uppercase !important;
         letter-spacing: 1px !important;
-        box-shadow: 0 2px 12px rgba(139, 92, 246, 0.4) !important;
+        box-shadow: 0 2px 10px rgba(59, 130, 246, 0.35) !important;
         transition: all 0.2s ease !important;
     }
-    
+
     .stDownloadButton > button:hover {
         transform: translateY(-1px) !important;
-        box-shadow: 0 4px 20px rgba(139, 92, 246, 0.5) !important;
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.45) !important;
+        filter: brightness(1.05) !important;
     }
-    
+
     /* ===== SPINNER ===== */
     .stSpinner > div {
-        border-color: #8B5CF6 transparent transparent transparent !important;
+        border-color: #3B82F6 transparent transparent transparent !important;
     }
-    
+
     /* ===== SCROLLBAR ===== */
     ::-webkit-scrollbar {
         width: 8px;
         height: 8px;
     }
-    
+
     ::-webkit-scrollbar-track {
-        background: #0F172A;
+        background: #F3F4F6;
     }
-    
+
     ::-webkit-scrollbar-thumb {
-        background: #1F2937;
+        background: #D1D5DB;
         border-radius: 4px;
     }
-    
+
     ::-webkit-scrollbar-thumb:hover {
-        background: #374151;
+        background: #9CA3AF;
     }
-    
+
     /* ===== DONUT CHART LEGEND ===== */
     .donut-legend {
         display: flex;
@@ -692,32 +695,33 @@ st.markdown("""
         gap: 8px;
         padding: 10px;
     }
-    
+
     .legend-item {
         display: flex;
         align-items: center;
         gap: 8px;
-        font-size: 0.8em;
-        color: #9CA3AF;
+        font-size: 0.85em;
+        color: #374151;
     }
-    
+
     .legend-dot {
         width: 10px;
         height: 10px;
         border-radius: 50%;
+        flex-shrink: 0;
     }
-    
+
     /* ===== FOOTER ===== */
     .footer {
         text-align: center;
         padding: 20px;
-        color: #A5B4FC;
+        color: #9CA3AF;
         font-size: 0.75em;
         letter-spacing: 1px;
-        border-top: 1px solid rgba(139, 92, 246, 0.15);
+        border-top: 1px solid #E5E7EB;
         margin-top: 24px;
     }
-    
+
     </style>
 """, unsafe_allow_html=True)
 
@@ -746,7 +750,7 @@ logo_html = ""
 if logo_base64:
     logo_html = f'<img src="data:image/png;base64,{logo_base64}" class="header-logo" alt="Carrefour">'
 else:
-    logo_html = '<span style="color: #9CA3AF;">Carrefour</span>'
+    logo_html = '<span style="color: #6B7280;">Carrefour</span>'
 
 st.markdown(f"""
     <div class="header-container">
@@ -763,18 +767,20 @@ st.markdown(f"""
 
 # --- BUTTON ROW ---
 st.write("")
-b1, b2, b3, b4, b5 = st.columns(5)
+b1, b2, b3, b4, b5, b6 = st.columns(6)
 with b1: 
     btn_1 = st.button("CLIENTES", key="top_1", use_container_width=True)
-with b2: 
+with b2:  
+    btn_seguridad = st.button("PERSONAL SEGURIDAD", key="top_seguridad", use_container_width=True)
+with b3:  
     btn_2 = st.button("FALTANTES", key="top_2", use_container_width=True)
-with b3: 
+with b4:  
     btn_3 = st.button("DOMICILIOS", key="top_3", use_container_width=True)
-with b4: 
+with b5:  
     btn_4 = st.button("INFORME", key="top_4", use_container_width=True)
-with b5: 
+with b6:  
     st.link_button("PLANILLA MEC", "https://docs.google.com/spreadsheets/d/1v0Rls8fg_uIGfhA1t3CzINq3VfAUvPY3DY8_m_ZSmM8/edit#gid=0", use_container_width=True)
-
+   
 # --- MAIN BODY ---
 st.write("")
 col_izq, col_der = st.columns([1, 1], gap="large")
@@ -815,6 +821,15 @@ with col_izq:
             with st.spinner("Procesando archivo..."):
                 pdf = logic_clientes.generar_pdf_clientes(df_clean, fecha_tit)
             st.download_button("DESCARGAR PDF CLIENTES", bytes(pdf), f"Clientes_{fecha_tit}.pdf", use_container_width=True)
+        if btn_seguridad:
+            with st.spinner("Procesando archivo..."):
+                pdf = logic_seguridad.generar_pdf_seguridad(df_clean, fecha_tit)
+            st.download_button(
+                "DESCARGAR PDF SEGURIDAD",
+                bytes(pdf),
+                f"Seguridad_{fecha_tit}.pdf",
+                use_container_width=True
+            )    
         if btn_2:
             with st.spinner("Procesando archivo..."):
                 pdf = logic_faltantes.generar_pdf_faltantes(df_clean, fecha_tit)
@@ -835,7 +850,7 @@ with col_izq:
     ''', unsafe_allow_html=True)
     archivo_inf = st.file_uploader("Subir CDP Manana", type=["xlsx"], key="inf_upload", label_visibility="collapsed")
     
-    st.markdown('<label style="color: #E5E7EB; font-weight: 500; font-size: 0.95em; display: block; margin-bottom: 8px;">Observaciones</label>', unsafe_allow_html=True)
+    st.markdown('<label style="color: #374151; font-weight: 500; font-size: 0.95em; display: block; margin-bottom: 8px;">Observaciones</label>', unsafe_allow_html=True)
     obs = st.text_area("Observaciones:", height=100, placeholder="Ingresa las novedades del turno aqui...", key="obs_area", label_visibility="collapsed")
     
     if btn_4:
@@ -931,7 +946,7 @@ with col_der:
     
     # --- WEEKLY CHART ---
     st.markdown(f'''
-        <p style="color: #9CA3AF; font-size: 0.8em; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">
+        <p style="color: #6B7280; font-size: 0.8em; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">
             {rango_semana}
         </p>
     ''', unsafe_allow_html=True)
@@ -951,7 +966,7 @@ with col_der:
     chart = alt.Chart(chart_data).mark_bar(
         cornerRadiusTopLeft=4,
         cornerRadiusTopRight=4,
-        color='#c6a769',
+        color='#3B82F6',
         opacity=opacidad_barras,
         width=20
     ).encode(
@@ -960,15 +975,15 @@ with col_der:
             labelAngle=0,
             labelFontSize=11,
             title=None,
-            tickColor='#1F2937',
-            domainColor='#1F2937'
+            tickColor='#E5E7EB',
+            domainColor='#E5E7EB'
         )),
         y=alt.Y('Pedidos:Q', axis=alt.Axis(
             labelColor='#9CA3AF',
-            gridColor='#1F2937',
+            gridColor='#E5E7EB',
             title=None,
-            tickColor='#1F2937',
-            domainColor='#1F2937'
+            tickColor='#E5E7EB',
+            domainColor='#E5E7EB'
         )),
         tooltip=['Dia', 'Pedidos']
     ).properties(
@@ -985,7 +1000,7 @@ with col_der:
     
     # --- MONTHLY EVOLUTION CHART ---
     st.markdown('''
-        <p style="color: #9CA3AF; font-size: 0.8em; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">
+        <p style="color: #6B7280; font-size: 0.8em; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">
             Evolucion Mensual
         </p>
     ''', unsafe_allow_html=True)
@@ -1000,7 +1015,7 @@ with col_der:
     tiene_datos_mes = any(p > 0 for p in pedidos_mes)
     
     line_chart = alt.Chart(chart_mes_data).mark_line(
-        color='#A78BFA',
+        color='#1D4ED8',
         strokeWidth=2,
         opacity=1.0 if tiene_datos_mes else 0.3
     ).encode(
@@ -1009,21 +1024,21 @@ with col_der:
             labelAngle=0,
             labelFontSize=9,
             title=None,
-            tickColor='#1F2937',
-            domainColor='#1F2937',
+            tickColor='#E5E7EB',
+            domainColor='#E5E7EB',
             values=list(range(1, len(dias_mes_labels)+1, 5))
         )),
         y=alt.Y('Pedidos:Q', axis=alt.Axis(
             labelColor='#9CA3AF',
-            gridColor='#1F2937',
+            gridColor='#E5E7EB',
             title=None,
-            tickColor='#1F2937',
-            domainColor='#1F2937'
+            tickColor='#E5E7EB',
+            domainColor='#E5E7EB'
         ))
     )
     
     points = alt.Chart(chart_mes_data[chart_mes_data['Pedidos'] > 0] if tiene_datos_mes else chart_mes_data).mark_circle(
-        color='#A78BFA',
+        color='#1D4ED8',
         size=40
     ).encode(
         x=alt.X('Dia:O'),
@@ -1044,7 +1059,7 @@ with col_der:
     # --- DONUT CHART (Modalidades) ---
     st.write("")
     st.markdown('''
-        <p style="color: #9CA3AF; font-size: 0.8em; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">
+        <p style="color: #6B7280; font-size: 0.8em; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">
             Modalidades de Entrega (Acumulado Mensual)
         </p>
     ''', unsafe_allow_html=True)
@@ -1066,7 +1081,7 @@ with col_der:
                 color=alt.Color(field="Modalidad", type="nominal",
                     scale=alt.Scale(
                         domain=["DOMICILIOS", "DRIVE", "SUCURSAL"],
-                        range=["#A78BFA", "#6B7280", "#E5E7EB"]
+                        range=["#3B82F6", "#6B7280", "#D1D5DB"]
                     ),
                     legend=None
                 ),
@@ -1084,7 +1099,7 @@ with col_der:
             st.markdown(f'''
                 <div class="donut-legend">
                     <div class="legend-item">
-                        <span class="legend-dot" style="background: #A78BFA;"></span>
+                        <span class="legend-dot" style="background: #3B82F6;"></span>
                         <span>DOMICILIOS ({modalidades.get("DOMICILIOS", 0)})</span>
                     </div>
                     <div class="legend-item">
@@ -1092,7 +1107,7 @@ with col_der:
                         <span>DRIVE ({modalidades.get("DRIVE", 0)})</span>
                     </div>
                     <div class="legend-item">
-                        <span class="legend-dot" style="background: #E5E7EB;"></span>
+                        <span class="legend-dot" style="background: #D1D5DB;"></span>
                         <span>SUCURSAL ({modalidades.get("SUCURSAL", 0)})</span>
                     </div>
                 </div>
@@ -1102,7 +1117,7 @@ with col_der:
         st.markdown(f'''
             <div class="donut-legend" style="opacity: 0.5;">
                 <div class="legend-item">
-                    <span class="legend-dot" style="background: #A78BFA;"></span>
+                    <span class="legend-dot" style="background: #3B82F6;"></span>
                     <span>DOMICILIOS (0)</span>
                 </div>
                 <div class="legend-item">
@@ -1110,7 +1125,7 @@ with col_der:
                     <span>DRIVE (0)</span>
                 </div>
                 <div class="legend-item">
-                    <span class="legend-dot" style="background: #E5E7EB;"></span>
+                    <span class="legend-dot" style="background: #D1D5DB;"></span>
                     <span>SUCURSAL (0)</span>
                 </div>
             </div>
