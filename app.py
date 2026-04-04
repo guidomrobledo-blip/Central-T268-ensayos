@@ -13,13 +13,14 @@ st.markdown("""
 
 /* Nombre archivo */
 [data-testid="stFileUploader"] span {
-    color: #374151 !important;
+    color: #FFFFFF !important;
     font-weight: 500;
+    text-shadow: 0 0 8px rgba(139, 92, 246, 0.25);
 }
 
 /* Tamaño archivo */
 [data-testid="stFileUploader"] small {
-    color: #6B7280 !important;
+    color: #A78BFA !important;
 }
 
 </style>
@@ -247,34 +248,27 @@ def calcular_total_mes(datos_mensuales):
     pedidos_por_dia = datos_mensuales.get("pedidos_por_dia", {})
     return sum(pedidos_por_dia.values())
 
-# --- CSS LIGHT CORPORATE DASHBOARD ---
+# --- CSS DARK MINIMALIST DASHBOARD ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-    /* ===== MAIN BACKGROUND ===== */
-    .stApp {
-        background: #F5F6F8 !important;
-        font-family: 'Inter', sans-serif !important;
-    }
+     .title-main {
+    text-shadow: 
+        0 1px 0 rgba(255,255,255,0.04),
+        0 6px 18px rgba(0,0,0,0.45);
+}
 
-    /* Remove default Streamlit styling */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-
-    /* ===== FULL WIDTH LAYOUT ===== */
-    .block-container {
-        padding: 1.5rem 2rem !important;
-        max-width: 100% !important;
-    }
-
-    @media (min-width: 1400px) {
-        .block-container {
-            padding: 1.5rem 4rem !important;
-        }
-    }
-
+.title-main::after {
+    content: "";
+    display: block;
+    width: 350px;
+    height: 2px;
+    margin: 8px auto 0 auto;
+    background: linear-gradient(90deg, transparent, #c6a769, transparent);
+    opacity: 0.9;
+}
+    
     /* ===== LOADING SCREEN ===== */
     .loading-screen {
         position: fixed;
@@ -282,109 +276,134 @@ st.markdown("""
         left: 0;
         width: 100vw;
         height: 100vh;
-        background: #F5F6F8;
+        background: #012E40;
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 9999;
         animation: fadeOut 0.5s ease-out 1.5s forwards;
     }
-
+    
     .loading-logo {
         animation: microZoom 2s ease-in-out infinite;
     }
-
+    
     @keyframes microZoom {
         0%, 100% { transform: scale(1); }
         50% { transform: scale(1.05); }
     }
-
+    
     @keyframes fadeOut {
         to { opacity: 0; visibility: hidden; }
     }
-
+    
+    /* ===== MAIN BACKGROUND — CORPORATE LIGHT + STREET GRID PATTERN ===== */
+    .stApp {
+        background-color: #C8D8EC;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Crect width='140' height='140' fill='%23C8D8EC'/%3E%3Crect x='0' y='58' width='140' height='24' fill='%23B0C8E0' opacity='0.8'/%3E%3Crect x='58' y='0' width='24' height='140' fill='%23B0C8E0' opacity='0.8'/%3E%3Cline x1='0' y1='70' x2='52' y2='70' stroke='%2396B4CC' stroke-width='1.5' stroke-dasharray='7,6'/%3E%3Cline x1='88' y1='70' x2='140' y2='70' stroke='%2396B4CC' stroke-width='1.5' stroke-dasharray='7,6'/%3E%3Cline x1='70' y1='0' x2='70' y2='52' stroke='%2396B4CC' stroke-width='1.5' stroke-dasharray='7,6'/%3E%3Cline x1='70' y1='88' x2='70' y2='140' stroke='%2396B4CC' stroke-width='1.5' stroke-dasharray='7,6'/%3E%3Crect x='6' y='6' width='45' height='45' rx='4' fill='%23A8C0D8' opacity='0.45'/%3E%3Crect x='89' y='6' width='45' height='45' rx='4' fill='%23A8C0D8' opacity='0.45'/%3E%3Crect x='6' y='89' width='45' height='45' rx='4' fill='%23A8C0D8' opacity='0.45'/%3E%3Crect x='89' y='89' width='45' height='45' rx='4' fill='%23A8C0D8' opacity='0.45'/%3E%3Crect x='13' y='13' width='13' height='9' rx='2' fill='%2390AACC' opacity='0.6'/%3E%3Crect x='30' y='13' width='13' height='9' rx='2' fill='%2390AACC' opacity='0.6'/%3E%3Crect x='13' y='26' width='30' height='7' rx='2' fill='%2390AACC' opacity='0.4'/%3E%3Crect x='96' y='13' width='13' height='9' rx='2' fill='%2390AACC' opacity='0.6'/%3E%3Crect x='113' y='13' width='13' height='9' rx='2' fill='%2390AACC' opacity='0.6'/%3E%3Crect x='96' y='26' width='30' height='7' rx='2' fill='%2390AACC' opacity='0.4'/%3E%3Crect x='13' y='96' width='13' height='9' rx='2' fill='%2390AACC' opacity='0.6'/%3E%3Crect x='30' y='96' width='13' height='9' rx='2' fill='%2390AACC' opacity='0.6'/%3E%3Crect x='13' y='109' width='30' height='7' rx='2' fill='%2390AACC' opacity='0.4'/%3E%3Crect x='96' y='96' width='13' height='9' rx='2' fill='%2390AACC' opacity='0.6'/%3E%3Crect x='113' y='96' width='13' height='9' rx='2' fill='%2390AACC' opacity='0.6'/%3E%3Crect x='96' y='109' width='30' height='7' rx='2' fill='%2390AACC' opacity='0.4'/%3E%3C/svg%3E");
+        background-repeat: repeat;
+        font-family: 'Inter', sans-serif !important;
+    }
+    
+    /* Remove default Streamlit styling */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    /* ===== FULL WIDTH LAYOUT ===== */
+    .block-container {
+        padding: 1.5rem 2rem !important;
+        max-width: 100% !important;
+    }
+    
+    @media (min-width: 1400px) {
+        .block-container {
+            padding: 1.5rem 4rem !important;
+        }
+    }
+    
     /* ===== HEADER ===== */
     .header-container {
-        background: #FFFFFF;
+        background: linear-gradient(135deg, 
+            rgba(35, 45, 85, 0.95) 0%, 
+            rgba(25, 35, 60, 0.98) 50%, 
+            rgba(20, 28, 50, 0.95) 100%);
         border-radius: 16px;
         padding: 24px 32px;
         margin-bottom: 24px;
-        border: 1px solid #E5E7EB;
-        border-bottom: 3px solid #3B82F6;
+        border: 1px solid rgba(99, 130, 255, 0.20);
+        border-top: 2px solid rgba(99, 130, 255, 0.50);
         display: flex;
         align-items: center;
         justify-content: space-between;
         flex-wrap: wrap;
         gap: 16px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        box-shadow: 
+            0 4px 30px rgba(99, 130, 255, 0.15),
+            0 1px 3px rgba(0, 0, 0, 0.3);
     }
-
+    
     .header-left {
         display: flex;
         align-items: center;
         gap: 20px;
     }
-
+    
     .header-logo {
         height: 50px;
         width: auto;
     }
-
+    
     .header-text {
         display: flex;
         flex-direction: column;
         gap: 4px;
     }
-
+    
     .title-main {
-        color: #111827;
-        font-weight: 700;
+        color: #FFFFFF;
+        font-weight: 600;
         font-size: 1.5em;
         margin: 0;
-        letter-spacing: 0.3px;
+        letter-spacing: 0.5px;
+        text-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
     }
-
-    .title-main::after {
-        content: "";
-        display: block;
-        width: 350px;
-        height: 2px;
-        margin: 8px auto 0 auto;
-        background: linear-gradient(90deg, transparent, #3B82F6, transparent);
-        opacity: 0.7;
-    }
-
     .title-main,
     .title-main span {
-        color: #111827 !important;
+    color: #FFFFFF !important;
     }
-
     .subtitle-main {
-        color: #6B7280;
+        color: #C7D2FE;
         font-size: 0.9em;
         margin: 0;
         font-weight: 400;
     }
-
+    
     .header-divider {
         height: 2px;
-        background: linear-gradient(90deg, transparent, #3B82F6, transparent);
+        background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.6), transparent);
         margin-top: 16px;
-        opacity: 0.3;
+        opacity: 0.6;
     }
-
+    
     /* ===== CARDS ===== */
     .glass-card {
-        background: #FFFFFF;
-        border-radius: 12px;
+        background: linear-gradient(145deg, 
+            rgba(45, 55, 95, 0.55) 0%, 
+            rgba(28, 38, 70, 0.85) 40%, 
+            rgba(20, 30, 60, 0.90) 100%);
+        border-radius: 14px;
         padding: 24px;
         margin-bottom: 20px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        border: 1px solid #E5E7EB;
+        box-shadow: 
+            0 4px 25px rgba(0, 0, 0, 0.35),
+            0 0 25px rgba(99, 130, 255, 0.12);
+        border: 1px solid rgba(99, 130, 255, 0.12);
+        border-top: 2px solid rgba(99, 130, 255, 0.30);
     }
-
+    
     .card-title {
-        color: #374151;
+        color: #E5E7EB;
         font-weight: 600;
         font-size: 0.95em;
         text-transform: uppercase;
@@ -394,208 +413,198 @@ st.markdown("""
         gap: 10px;
         margin-bottom: 16px;
         padding-bottom: 12px;
-        border-bottom: 1px solid #F3F4F6;
+        border-bottom: 1px solid rgba(139, 92, 246, 0.15);
     }
-
+    
     .card-icon {
         font-size: 1.1em;
     }
-
-    /* ===== BUTTONS — BASE ===== */
+    
+    /* ===== BUTTONS ===== */
     div.stButton > button {
-        border-radius: 999px !important;
-        height: 48px !important;
+        background: linear-gradient(145deg, rgba(35, 45, 75, 0.8), rgba(20, 28, 50, 0.95)) !important;
+        border-radius: 8px !important;
+        height: 52px !important;
         font-weight: 600 !important;
-        font-size: 0.85em !important;
+        font-size: 0.9em !important;
         text-transform: uppercase !important;
         letter-spacing: 1px !important;
-        color: #FFFFFF !important;
-        border: none !important;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12) !important;
+        color: #E5E7EB !important;
+        border: 1px solid rgba(99, 130, 255, 0.25) !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
         transition: all 0.2s ease !important;
-        background: #6B7280 !important;
     }
-
+    
     div.stButton > button:hover {
-        filter: brightness(0.92) !important;
+        border-color: #6382FF !important;
+        box-shadow: 0 0 15px rgba(99, 130, 255, 0.35), 0 0 0 1px #6382FF !important;
         transform: translateY(-1px) !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
     }
-
+    
     div.stButton > button:active {
         transform: translateY(0) !important;
-        filter: brightness(0.88) !important;
     }
-
-    /* CLIENTES — col 1 */
-    [data-testid="column"]:nth-child(1) div.stButton > button {
-        background: #4CAF50 !important;
+    
+    /* Processing state */
+    div.stButton > button:disabled {
+        opacity: 0.6 !important;
+        cursor: not-allowed !important;
     }
-
-    /* PERSONAL SEGURIDAD — col 2 */
-    [data-testid="column"]:nth-child(2) div.stButton > button {
-        background: #6366F1 !important;
-    }
-
-    /* FALTANTES — col 3 */
-    [data-testid="column"]:nth-child(3) div.stButton > button {
-        background: #3B82F6 !important;
-    }
-
-    /* DOMICILIOS — col 4 */
-    [data-testid="column"]:nth-child(4) div.stButton > button {
-        background: #F59E0B !important;
-    }
-
-    /* INFORME — col 5 */
-    [data-testid="column"]:nth-child(5) div.stButton > button {
-        background: #F97316 !important;
-    }
-
-    /* Link Button (Planilla MEC) — col 6 */
-    [data-testid="column"]:nth-child(6) .stLinkButton > a {
-        background: #F3F4F6 !important;
-        border-radius: 999px !important;
-        height: 48px !important;
+    
+    /* Link Button (Planilla MEC) */
+    .stLinkButton > a {
+        background: linear-gradient(145deg, rgba(35, 45, 75, 0.8), rgba(20, 28, 50, 0.95)) !important;
+        border-radius: 8px !important;
+        height: 52px !important;
         font-weight: 600 !important;
-        font-size: 0.85em !important;
+        font-size: 0.9em !important;
         text-transform: uppercase !important;
         letter-spacing: 1px !important;
-        color: #374151 !important;
-        border: 1px solid #D1D5DB !important;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06) !important;
+        color: #E5E7EB !important;
+        border: 1px solid rgba(99, 130, 255, 0.25) !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
         transition: all 0.2s ease !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
         text-decoration: none !important;
     }
-
-    [data-testid="column"]:nth-child(6) .stLinkButton > a:hover {
-        filter: brightness(0.96) !important;
+    
+    .stLinkButton > a:hover {
+        border-color: #6382FF !important;
+        box-shadow: 0 0 15px rgba(99, 130, 255, 0.35), 0 0 0 1px #6382FF !important;
         transform: translateY(-1px) !important;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.10) !important;
         text-decoration: none !important;
     }
-
+    
     /* ===== FILE UPLOADER ===== */
     [data-testid="stFileUploader"] {
-        background: #FFFFFF;
+        background: linear-gradient(145deg, 
+            rgba(30, 27, 55, 0.5) 0%, 
+            rgba(17, 24, 39, 0.7) 100%);
         border-radius: 10px;
         padding: 16px;
-        border: 1.5px dashed #D1D5DB;
+        border: 1px dashed rgba(139, 92, 246, 0.3);
         transition: all 0.2s ease;
     }
-
+    
     [data-testid="stFileUploader"]:hover {
-        border-color: #3B82F6;
-        background: #EFF6FF;
+        border-color: #8B5CF6;
+        background: linear-gradient(145deg, 
+            rgba(139, 92, 246, 0.1) 0%, 
+            rgba(17, 24, 39, 0.8) 100%);
     }
-
+    
     [data-testid="stFileUploader"] label {
-        color: #6B7280 !important;
+        color: #9CA3AF !important;
         font-size: 0.85em !important;
     }
-
+    
     [data-testid="stFileUploader"] p {
-        color: #6B7280 !important;
-    }
-
-    [data-testid="stFileUploader"] span {
-        color: #374151 !important;
-    }
-
-    [data-testid="stFileUploaderDropzone"] {
-        background: #FFFFFF !important;
-        border: none !important;
-    }
-
-    [data-testid="stFileUploaderDropzone"] svg {
-        color: #3B82F6 !important;
-        opacity: 0.7;
-    }
-
-    [data-testid="stFileUploaderDropzone"] > div {
-        color: #6B7280 !important;
-    }
-
-    [data-testid="stFileUploaderDropzone"] small {
         color: #9CA3AF !important;
     }
-
+    
+    [data-testid="stFileUploader"] span {
+        color: #E5E7EB !important;
+    }
+    
+    /* File uploader dropzone styling */
+    [data-testid="stFileUploaderDropzone"] {
+        background: linear-gradient(145deg, 
+            rgba(30, 27, 55, 0.6) 0%, 
+            rgba(17, 24, 39, 0.8) 100%) !important;
+        border: none !important;
+    }
+    
+    /* Style the cloud icon and text */
+    [data-testid="stFileUploaderDropzone"] svg {
+        color: #8B5CF6 !important;
+        opacity: 0.7;
+    }
+    
+    [data-testid="stFileUploaderDropzone"] > div {
+        color: #9CA3AF !important;
+    }
+    
+    [data-testid="stFileUploaderDropzone"] small {
+        color: #6B7280 !important;
+    }
+    
     [data-testid="stFileUploader"] button {
-        background: #EFF6FF !important;
-        color: #1D4ED8 !important;
-        border: 1px solid #BFDBFE !important;
+        background: linear-gradient(145deg, rgba(88, 28, 135, 0.4), rgba(17, 24, 39, 0.9)) !important;
+        color: #E5E7EB !important;
+        border: 1px solid rgba(139, 92, 246, 0.3) !important;
         border-radius: 6px !important;
     }
-
+    
     [data-testid="stFileUploader"] button:hover {
-        background: #DBEAFE !important;
-        border-color: #3B82F6 !important;
+        background: linear-gradient(145deg, rgba(139, 92, 246, 0.3), rgba(17, 24, 39, 0.9)) !important;
+        border-color: #8B5CF6 !important;
     }
-
+    
     /* ===== TEXT AREA ===== */
     .stTextArea textarea {
-        background: #FFFFFF !important;
-        border: 1px solid #D1D5DB !important;
+        background: #111827 !important;
+        border: 1px solid #1F2937 !important;
         border-radius: 8px !important;
-        color: #111827 !important;
+        color: #E5E7EB !important;
         font-family: 'Inter', sans-serif !important;
         font-size: 0.9em !important;
         padding: 12px !important;
     }
-
+    
     .stTextArea textarea:focus {
-        border-color: #3B82F6 !important;
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15) !important;
+        border-color: #B8964A !important;
+        box-shadow: 0 0 0 1px #B8964A !important;
     }
-
+    
     .stTextArea textarea::placeholder {
-        color: #9CA3AF !important;
+        color: #6B7280 !important;
     }
-
+    
     .stTextArea label {
-        color: #374151 !important;
+        color: #E5E7EB !important;
         font-weight: 500 !important;
         font-size: 0.95em !important;
     }
-
+    
     /* ===== METRICS / COUNTERS ===== */
     .metric-card {
-        background: #FFFFFF;
+        background: linear-gradient(145deg, 
+            rgba(30, 27, 55, 0.5) 0%, 
+            rgba(17, 24, 39, 0.9) 100%);
         border-radius: 12px;
         padding: 20px;
         text-align: center;
-        border: 1px solid #E5E7EB;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+        border: 1px solid rgba(139, 92, 246, 0.15);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     }
-
+    
     .metric-value {
         font-family: 'Inter', sans-serif;
         font-weight: 700;
         font-size: 2.5em;
-        color: #111827;
+        color: #F1F5F9;
         margin: 0;
     }
-
+    
     .metric-value-gold {
-        color: #1D4ED8;
+        color: #A78BFA;
     }
-
+    
     .metric-label {
         font-family: 'Inter', sans-serif;
         font-weight: 500;
         font-size: 0.8em;
-        color: #6B7280;
+        color: #A5B4FC;
         text-transform: uppercase;
         letter-spacing: 1px;
         margin-top: 8px;
     }
-
+    
     .reset-btn {
         background: transparent;
-        border: 1px solid #E5E7EB;
+        border: 1px solid rgba(139, 92, 246, 0.2);
         border-radius: 6px;
         color: #9CA3AF;
         padding: 4px 8px;
@@ -604,90 +613,89 @@ st.markdown("""
         transition: all 0.2s ease;
         margin-left: 8px;
     }
-
+    
     .reset-btn:hover {
-        border-color: #3B82F6;
-        color: #3B82F6;
+        border-color: #8B5CF6;
+        color: #8B5CF6;
     }
-
+    
     /* ===== CHARTS ===== */
     [data-testid="stVegaLiteChart"] {
         background: transparent;
         border-radius: 8px;
     }
-
+    
     /* ===== ALERTS ===== */
     .stSuccess {
-        background: rgba(34, 197, 94, 0.08) !important;
+        background: rgba(34, 197, 94, 0.1) !important;
         border: 1px solid rgba(34, 197, 94, 0.3) !important;
         border-radius: 8px !important;
-        color: #15803D !important;
+        color: #22C55E !important;
     }
-
+    
     .stInfo {
-        background: rgba(59, 130, 246, 0.08) !important;
+        background: rgba(59, 130, 246, 0.1) !important;
         border: 1px solid rgba(59, 130, 246, 0.3) !important;
         border-radius: 8px !important;
-        color: #1D4ED8 !important;
+        color: #3B82F6 !important;
     }
-
+    
     .stWarning {
-        background: rgba(234, 179, 8, 0.08) !important;
+        background: rgba(234, 179, 8, 0.1) !important;
         border: 1px solid rgba(234, 179, 8, 0.3) !important;
         border-radius: 8px !important;
-        color: #B45309 !important;
+        color: #EAB308 !important;
     }
-
+    
     .stError {
-        background: rgba(239, 68, 68, 0.08) !important;
+        background: rgba(239, 68, 68, 0.1) !important;
         border: 1px solid rgba(239, 68, 68, 0.3) !important;
         border-radius: 8px !important;
-        color: #DC2626 !important;
+        color: #EF4444 !important;
     }
-
+    
     /* ===== DOWNLOAD BUTTON ===== */
     .stDownloadButton > button {
-        background: linear-gradient(135deg, #3B82F6, #1D4ED8) !important;
+        background: linear-gradient(135deg, #8B5CF6, #7C3AED) !important;
         border: none !important;
-        border-radius: 999px !important;
+        border-radius: 8px !important;
         color: white !important;
         font-weight: 600 !important;
         text-transform: uppercase !important;
         letter-spacing: 1px !important;
-        box-shadow: 0 2px 10px rgba(59, 130, 246, 0.35) !important;
+        box-shadow: 0 2px 12px rgba(139, 92, 246, 0.4) !important;
         transition: all 0.2s ease !important;
     }
-
+    
     .stDownloadButton > button:hover {
         transform: translateY(-1px) !important;
-        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.45) !important;
-        filter: brightness(1.05) !important;
+        box-shadow: 0 4px 20px rgba(139, 92, 246, 0.5) !important;
     }
-
+    
     /* ===== SPINNER ===== */
     .stSpinner > div {
-        border-color: #3B82F6 transparent transparent transparent !important;
+        border-color: #8B5CF6 transparent transparent transparent !important;
     }
-
+    
     /* ===== SCROLLBAR ===== */
     ::-webkit-scrollbar {
         width: 8px;
         height: 8px;
     }
-
+    
     ::-webkit-scrollbar-track {
-        background: #F3F4F6;
+        background: #0F172A;
     }
-
+    
     ::-webkit-scrollbar-thumb {
-        background: #D1D5DB;
+        background: #1F2937;
         border-radius: 4px;
     }
-
+    
     ::-webkit-scrollbar-thumb:hover {
-        background: #9CA3AF;
+        background: #374151;
     }
-
+    
     /* ===== DONUT CHART LEGEND ===== */
     .donut-legend {
         display: flex;
@@ -695,33 +703,32 @@ st.markdown("""
         gap: 8px;
         padding: 10px;
     }
-
+    
     .legend-item {
         display: flex;
         align-items: center;
         gap: 8px;
-        font-size: 0.85em;
-        color: #374151;
+        font-size: 0.8em;
+        color: #9CA3AF;
     }
-
+    
     .legend-dot {
         width: 10px;
         height: 10px;
         border-radius: 50%;
-        flex-shrink: 0;
     }
-
+    
     /* ===== FOOTER ===== */
     .footer {
         text-align: center;
         padding: 20px;
-        color: #9CA3AF;
+        color: #A5B4FC;
         font-size: 0.75em;
         letter-spacing: 1px;
-        border-top: 1px solid #E5E7EB;
+        border-top: 1px solid rgba(139, 92, 246, 0.15);
         margin-top: 24px;
     }
-
+    
     </style>
 """, unsafe_allow_html=True)
 
@@ -750,7 +757,7 @@ logo_html = ""
 if logo_base64:
     logo_html = f'<img src="data:image/png;base64,{logo_base64}" class="header-logo" alt="Carrefour">'
 else:
-    logo_html = '<span style="color: #6B7280;">Carrefour</span>'
+    logo_html = '<span style="color: #9CA3AF;">Carrefour</span>'
 
 st.markdown(f"""
     <div class="header-container">
@@ -850,7 +857,7 @@ with col_izq:
     ''', unsafe_allow_html=True)
     archivo_inf = st.file_uploader("Subir CDP Manana", type=["xlsx"], key="inf_upload", label_visibility="collapsed")
     
-    st.markdown('<label style="color: #374151; font-weight: 500; font-size: 0.95em; display: block; margin-bottom: 8px;">Observaciones</label>', unsafe_allow_html=True)
+    st.markdown('<label style="color: #E5E7EB; font-weight: 500; font-size: 0.95em; display: block; margin-bottom: 8px;">Observaciones</label>', unsafe_allow_html=True)
     obs = st.text_area("Observaciones:", height=100, placeholder="Ingresa las novedades del turno aqui...", key="obs_area", label_visibility="collapsed")
     
     if btn_4:
@@ -946,7 +953,7 @@ with col_der:
     
     # --- WEEKLY CHART ---
     st.markdown(f'''
-        <p style="color: #6B7280; font-size: 0.8em; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">
+        <p style="color: #9CA3AF; font-size: 0.8em; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">
             {rango_semana}
         </p>
     ''', unsafe_allow_html=True)
@@ -966,7 +973,7 @@ with col_der:
     chart = alt.Chart(chart_data).mark_bar(
         cornerRadiusTopLeft=4,
         cornerRadiusTopRight=4,
-        color='#3B82F6',
+        color='#c6a769',
         opacity=opacidad_barras,
         width=20
     ).encode(
@@ -975,15 +982,15 @@ with col_der:
             labelAngle=0,
             labelFontSize=11,
             title=None,
-            tickColor='#E5E7EB',
-            domainColor='#E5E7EB'
+            tickColor='#1F2937',
+            domainColor='#1F2937'
         )),
         y=alt.Y('Pedidos:Q', axis=alt.Axis(
             labelColor='#9CA3AF',
-            gridColor='#E5E7EB',
+            gridColor='#1F2937',
             title=None,
-            tickColor='#E5E7EB',
-            domainColor='#E5E7EB'
+            tickColor='#1F2937',
+            domainColor='#1F2937'
         )),
         tooltip=['Dia', 'Pedidos']
     ).properties(
@@ -1000,7 +1007,7 @@ with col_der:
     
     # --- MONTHLY EVOLUTION CHART ---
     st.markdown('''
-        <p style="color: #6B7280; font-size: 0.8em; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">
+        <p style="color: #9CA3AF; font-size: 0.8em; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">
             Evolucion Mensual
         </p>
     ''', unsafe_allow_html=True)
@@ -1015,7 +1022,7 @@ with col_der:
     tiene_datos_mes = any(p > 0 for p in pedidos_mes)
     
     line_chart = alt.Chart(chart_mes_data).mark_line(
-        color='#1D4ED8',
+        color='#A78BFA',
         strokeWidth=2,
         opacity=1.0 if tiene_datos_mes else 0.3
     ).encode(
@@ -1024,21 +1031,21 @@ with col_der:
             labelAngle=0,
             labelFontSize=9,
             title=None,
-            tickColor='#E5E7EB',
-            domainColor='#E5E7EB',
+            tickColor='#1F2937',
+            domainColor='#1F2937',
             values=list(range(1, len(dias_mes_labels)+1, 5))
         )),
         y=alt.Y('Pedidos:Q', axis=alt.Axis(
             labelColor='#9CA3AF',
-            gridColor='#E5E7EB',
+            gridColor='#1F2937',
             title=None,
-            tickColor='#E5E7EB',
-            domainColor='#E5E7EB'
+            tickColor='#1F2937',
+            domainColor='#1F2937'
         ))
     )
     
     points = alt.Chart(chart_mes_data[chart_mes_data['Pedidos'] > 0] if tiene_datos_mes else chart_mes_data).mark_circle(
-        color='#1D4ED8',
+        color='#A78BFA',
         size=40
     ).encode(
         x=alt.X('Dia:O'),
@@ -1059,7 +1066,7 @@ with col_der:
     # --- DONUT CHART (Modalidades) ---
     st.write("")
     st.markdown('''
-        <p style="color: #6B7280; font-size: 0.8em; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">
+        <p style="color: #9CA3AF; font-size: 0.8em; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">
             Modalidades de Entrega (Acumulado Mensual)
         </p>
     ''', unsafe_allow_html=True)
@@ -1081,7 +1088,7 @@ with col_der:
                 color=alt.Color(field="Modalidad", type="nominal",
                     scale=alt.Scale(
                         domain=["DOMICILIOS", "DRIVE", "SUCURSAL"],
-                        range=["#3B82F6", "#6B7280", "#D1D5DB"]
+                        range=["#A78BFA", "#6B7280", "#E5E7EB"]
                     ),
                     legend=None
                 ),
@@ -1099,7 +1106,7 @@ with col_der:
             st.markdown(f'''
                 <div class="donut-legend">
                     <div class="legend-item">
-                        <span class="legend-dot" style="background: #3B82F6;"></span>
+                        <span class="legend-dot" style="background: #A78BFA;"></span>
                         <span>DOMICILIOS ({modalidades.get("DOMICILIOS", 0)})</span>
                     </div>
                     <div class="legend-item">
@@ -1107,7 +1114,7 @@ with col_der:
                         <span>DRIVE ({modalidades.get("DRIVE", 0)})</span>
                     </div>
                     <div class="legend-item">
-                        <span class="legend-dot" style="background: #D1D5DB;"></span>
+                        <span class="legend-dot" style="background: #E5E7EB;"></span>
                         <span>SUCURSAL ({modalidades.get("SUCURSAL", 0)})</span>
                     </div>
                 </div>
@@ -1117,7 +1124,7 @@ with col_der:
         st.markdown(f'''
             <div class="donut-legend" style="opacity: 0.5;">
                 <div class="legend-item">
-                    <span class="legend-dot" style="background: #3B82F6;"></span>
+                    <span class="legend-dot" style="background: #A78BFA;"></span>
                     <span>DOMICILIOS (0)</span>
                 </div>
                 <div class="legend-item">
@@ -1125,7 +1132,7 @@ with col_der:
                     <span>DRIVE (0)</span>
                 </div>
                 <div class="legend-item">
-                    <span class="legend-dot" style="background: #D1D5DB;"></span>
+                    <span class="legend-dot" style="background: #E5E7EB;"></span>
                     <span>SUCURSAL (0)</span>
                 </div>
             </div>
