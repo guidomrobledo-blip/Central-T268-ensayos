@@ -393,8 +393,8 @@ st.markdown("""
             rgba(28, 38, 70, 0.85) 40%, 
             rgba(20, 30, 60, 0.90) 100%);
         border-radius: 14px;
-        padding: 14px 18px;
-        margin-bottom: 14px;
+        padding: 12px 16px;
+        margin-bottom: 12px;
         box-shadow: 
             0 4px 25px rgba(0, 0, 0, 0.35),
             0 0 25px rgba(99, 130, 255, 0.12);
@@ -411,8 +411,8 @@ st.markdown("""
         display: flex;
         align-items: center;
         gap: 10px;
-        margin-bottom: 10px;
-        padding-bottom: 8px;
+        margin-bottom: 8px;
+        padding-bottom: 6px;
         border-bottom: 1px solid rgba(139, 92, 246, 0.15);
     }
     
