@@ -6,6 +6,55 @@ import logic_clientes, logic_faltantes, logic_domicilios, logic_informe, logic_s
 import os
 import json
 import hashlib
+import base64
+
+# ============================================================
+# CONFIGURACION DE IMAGEN DE FONDO
+# Para cambiar el fondo, reemplaza el archivo wallpaper_website.jpg
+# en la carpeta del proyecto por la nueva imagen (mismo nombre).
+# Si querés usar un nombre distinto, cambiá solo la línea de abajo:
+WALLPAPER_FILE = "wallpaper_website.jpg"
+# ============================================================
+
+def get_image_base64(image_path):
+    try:
+        with open(image_path, "rb") as img_file:
+            return base64.b64encode(img_file.read()).decode()
+    except:
+        return None
+
+# Cargar wallpaper como base64
+wallpaper_b64 = get_image_base64(WALLPAPER_FILE)
+
+# CSS de fondo: imagen si está disponible, fallback al degradado original
+if wallpaper_b64:
+    bg_css = f"""
+    .stApp {{
+        background-image: url("data:image/jpeg;base64,{wallpaper_b64}");
+        background-size: cover;
+        background-position: center center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        font-family: 'Inter', sans-serif !important;
+    }}
+    """
+else:
+    bg_css = """
+    .stApp {
+        background:
+            radial-gradient(ellipse 160% 130% at 50% -10%,
+                rgba(120, 150, 255, 0.65) 0%,
+                rgba(99, 130, 255, 0.30) 35%,
+                rgba(79, 110, 230, 0.12) 60%,
+                transparent 90%),
+            linear-gradient(180deg,
+                #2a3260 0%,
+                #20295a 20%,
+                #18224a 50%,
+                #131c3f 100%) !important;
+        font-family: 'Inter', sans-serif !important;
+    }
+    """
 
 # 🎨 ESTILOS PERSONALIZADOS
 st.markdown("""
@@ -54,11 +103,9 @@ def cargar_datos_mensuales():
         if os.path.exists(DATA_FILE):
             with open(DATA_FILE, "r") as f:
                 datos = json.load(f)
-            # Verificar si es el mismo mes
             mes_guardado = datos.get("mes", "")
             mes_actual = hoy_ar.strftime("%Y-%m")
             if mes_guardado != mes_actual:
-                # Nuevo mes, reiniciar datos
                 return {"mes": mes_actual, "pedidos_por_dia": {}, "archivos_procesados": [], "modalidades": {"DOMICILIOS": 0, "DRIVE": 0, "SUCURSAL": 0}}
             return datos
         else:
@@ -91,19 +138,16 @@ def extraer_fecha_entrega(df):
         if "FECHA" in str(col).upper() and "ENTREGA" in str(col).upper():
             col_fecha = col
             break
-    
+
     if col_fecha is None:
         return None
-    
+
     try:
-        # Obtener el primer valor no nulo de la columna
         fecha_val = df[col_fecha].dropna().iloc[0]
-        
-        # Si ya es datetime
+
         if isinstance(fecha_val, (pd.Timestamp, datetime)):
             return fecha_val.date() if hasattr(fecha_val, 'date') else fecha_val
-        
-        # Si es string, intentar parsear con multiples formatos
+
         fecha_str = str(fecha_val)
         for fmt in ["%d/%m/%Y", "%Y-%m-%d", "%d-%m-%Y", "%d.%m.%Y", "%d/%m/%y", "%d-%m-%y", "%d-%b-%y", "%d/%m/%Y"]:
             try:
@@ -117,84 +161,71 @@ def extraer_fecha_entrega(df):
 def contar_modalidades(df):
     """Cuenta las modalidades de entrega del DataFrame."""
     modalidades_conteo = {"DOMICILIOS": 0, "DRIVE": 0, "SUCURSAL": 0}
-    
-    # Buscar la columna de modalidad de entrega (priorizar "MODALIDAD DE ENTREGA")
+
     col_modalidad = None
-    
-    # Primera busqueda: columna exacta o similar a "MODALIDAD DE ENTREGA"
+
     for col in df.columns:
         col_upper = str(col).upper().strip()
         if "MODALIDAD" in col_upper and "ENTREGA" in col_upper:
             col_modalidad = col
             break
-    
-    # Segunda busqueda: solo "MODALIDAD"
+
     if col_modalidad is None:
         for col in df.columns:
             col_upper = str(col).upper().strip()
             if "MODALIDAD" in col_upper and "FECHA" not in col_upper:
                 col_modalidad = col
                 break
-    
-    # Tercera busqueda: "TIPO ENTREGA" o "CANAL"
+
     if col_modalidad is None:
         for col in df.columns:
             col_upper = str(col).upper().strip()
             if ("TIPO" in col_upper and "ENTREGA" in col_upper) or "CANAL" in col_upper:
                 col_modalidad = col
                 break
-    
+
     if col_modalidad is not None:
         for valor in df[col_modalidad].dropna():
             valor_upper = str(valor).upper().strip()
-            # Detectar DOMICILIO/DOMICILIOS
             if "DOMICILIO" in valor_upper or "A DOMICILIO" in valor_upper:
                 modalidades_conteo["DOMICILIOS"] += 1
-            # Detectar DRIVE
             elif "DRIVE" in valor_upper:
                 modalidades_conteo["DRIVE"] += 1
-            # Detectar SUCURSAL (retiro en tienda, pick up, etc.)
             elif "SUCURSAL" in valor_upper or "RETIRO" in valor_upper or "PICK" in valor_upper or "TIENDA" in valor_upper:
                 modalidades_conteo["SUCURSAL"] += 1
-    
+
     return modalidades_conteo
 
 
 def registrar_pedidos_cdp(archivo_bytes, df):
     """Registra los pedidos del archivo CDP si no fue procesado antes."""
     datos = cargar_datos_mensuales()
-    
-    # Verificar si el archivo ya fue procesado
+
     archivo_hash = obtener_hash_archivo(archivo_bytes)
     if archivo_hash in datos["archivos_procesados"]:
-        return datos, False  # Ya fue procesado, no registrar de nuevo
-    
-    # Extraer la fecha de entrega del Excel
+        return datos, False
+
     fecha_entrega = extraer_fecha_entrega(df)
     if fecha_entrega is None:
         return datos, False
-    
-    # Solo registrar si la fecha es del mes actual
+
     if fecha_entrega.strftime("%Y-%m") != datos["mes"]:
         return datos, False
-    
-    # Registrar los pedidos para esa fecha
+
     fecha_str = fecha_entrega.strftime("%Y-%m-%d")
     cantidad_pedidos = len(df)
 
-    # Guardar la cantidad de pedidos para esa fecha
     datos["pedidos_por_dia"][fecha_str] = cantidad_pedidos
     datos["archivos_procesados"].append(archivo_hash)
-    
-    # Contar modalidades y acumular al total mensual
+
     modalidades_archivo = contar_modalidades(df)
     if "modalidades" not in datos:
         datos["modalidades"] = {"DOMICILIOS": 0, "DRIVE": 0, "SUCURSAL": 0}
-    
+
     datos["modalidades"]["DOMICILIOS"] += modalidades_archivo["DOMICILIOS"]
     datos["modalidades"]["DRIVE"] += modalidades_archivo["DRIVE"]
     datos["modalidades"]["SUCURSAL"] += modalidades_archivo["SUCURSAL"]
-    
+
     guardar_datos_mensuales(datos)
     return datos, True
 
@@ -202,37 +233,33 @@ def obtener_datos_semana(datos_mensuales, inicio_semana):
     """Obtiene los datos de pedidos para la semana especificada."""
     pedidos_semana = []
     dias_labels = []
-    
+
     for i in range(7):
         dia = inicio_semana + timedelta(days=i)
         fecha_str = dia.strftime("%Y-%m-%d")
         dia_semana = DIAS_SEMANA_ES[dia.weekday()]
         dia_num = dia.day
-        
-        # Formato: "Lun-9", "Mar-10", etc.
+
         label = f"{dia_semana}-{dia_num}"
         dias_labels.append(label)
-        
-        # Obtener pedidos de ese dia (0 si no hay datos)
+
         pedidos = datos_mensuales.get("pedidos_por_dia", {}).get(fecha_str, 0)
         pedidos_semana.append(pedidos)
-    
+
     return dias_labels, pedidos_semana
 
 def obtener_datos_mes(datos_mensuales):
     """Obtiene los datos de pedidos para todo el mes."""
     pedidos_mes = []
     dias_labels = []
-    
-    # Obtener el primer dia del mes actual
+
     primer_dia_mes = hoy_ar.replace(day=1)
-    
-    # Calcular el ultimo dia del mes
+
     if hoy_ar.month == 12:
         ultimo_dia_mes = hoy_ar.replace(day=31)
     else:
         ultimo_dia_mes = (hoy_ar.replace(month=hoy_ar.month + 1, day=1) - timedelta(days=1))
-    
+
     dia_actual = primer_dia_mes
     while dia_actual <= ultimo_dia_mes:
         fecha_str = dia_actual.strftime("%Y-%m-%d")
@@ -240,7 +267,7 @@ def obtener_datos_mes(datos_mensuales):
         pedidos = datos_mensuales.get("pedidos_por_dia", {}).get(fecha_str, 0)
         pedidos_mes.append(pedidos)
         dia_actual += timedelta(days=1)
-    
+
     return dias_labels, pedidos_mes
 
 def calcular_total_mes(datos_mensuales):
@@ -249,17 +276,17 @@ def calcular_total_mes(datos_mensuales):
     return sum(pedidos_por_dia.values())
 
 # --- CSS DARK MINIMALIST DASHBOARD ---
-st.markdown("""
+st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-     .title-main {
+     .title-main {{
     text-shadow: 
         0 1px 0 rgba(255,255,255,0.04),
         0 6px 18px rgba(0,0,0,0.45);
-}
+}}
 
-.title-main::after {
+.title-main::after {{
     content: "";
     display: block;
     width: 350px;
@@ -267,10 +294,10 @@ st.markdown("""
     margin: 8px auto 0 auto;
     background: linear-gradient(90deg, transparent, #c6a769, transparent);
     opacity: 0.9;
-}
+}}
     
     /* ===== LOADING SCREEN ===== */
-    .loading-screen {
+    .loading-screen {{
         position: fixed;
         top: 0;
         left: 0;
@@ -282,48 +309,43 @@ st.markdown("""
         justify-content: center;
         z-index: 9999;
         animation: fadeOut 0.5s ease-out 1.5s forwards;
-    }
+    }}
     
-    .loading-logo {
+    .loading-logo {{
         animation: microZoom 2s ease-in-out infinite;
-    }
+    }}
     
-    @keyframes microZoom {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-    }
+    @keyframes microZoom {{
+        0%, 100% {{ transform: scale(1); }}
+        50% {{ transform: scale(1.05); }}
+    }}
     
-    @keyframes fadeOut {
-        to { opacity: 0; visibility: hidden; }
-    }
+    @keyframes fadeOut {{
+        to {{ opacity: 0; visibility: hidden; }}
+    }}
     
-    /* ===== MAIN BACKGROUND — CORPORATE LIGHT + STREET GRID PATTERN ===== */
-    .stApp {
-        background-color: #C8D8EC;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Crect width='140' height='140' fill='%23C8D8EC'/%3E%3Crect x='0' y='58' width='140' height='24' fill='%23B0C8E0' opacity='0.8'/%3E%3Crect x='58' y='0' width='24' height='140' fill='%23B0C8E0' opacity='0.8'/%3E%3Cline x1='0' y1='70' x2='52' y2='70' stroke='%2396B4CC' stroke-width='1.5' stroke-dasharray='7,6'/%3E%3Cline x1='88' y1='70' x2='140' y2='70' stroke='%2396B4CC' stroke-width='1.5' stroke-dasharray='7,6'/%3E%3Cline x1='70' y1='0' x2='70' y2='52' stroke='%2396B4CC' stroke-width='1.5' stroke-dasharray='7,6'/%3E%3Cline x1='70' y1='88' x2='70' y2='140' stroke='%2396B4CC' stroke-width='1.5' stroke-dasharray='7,6'/%3E%3Crect x='6' y='6' width='45' height='45' rx='4' fill='%23A8C0D8' opacity='0.45'/%3E%3Crect x='89' y='6' width='45' height='45' rx='4' fill='%23A8C0D8' opacity='0.45'/%3E%3Crect x='6' y='89' width='45' height='45' rx='4' fill='%23A8C0D8' opacity='0.45'/%3E%3Crect x='89' y='89' width='45' height='45' rx='4' fill='%23A8C0D8' opacity='0.45'/%3E%3Crect x='13' y='13' width='13' height='9' rx='2' fill='%2390AACC' opacity='0.6'/%3E%3Crect x='30' y='13' width='13' height='9' rx='2' fill='%2390AACC' opacity='0.6'/%3E%3Crect x='13' y='26' width='30' height='7' rx='2' fill='%2390AACC' opacity='0.4'/%3E%3Crect x='96' y='13' width='13' height='9' rx='2' fill='%2390AACC' opacity='0.6'/%3E%3Crect x='113' y='13' width='13' height='9' rx='2' fill='%2390AACC' opacity='0.6'/%3E%3Crect x='96' y='26' width='30' height='7' rx='2' fill='%2390AACC' opacity='0.4'/%3E%3Crect x='13' y='96' width='13' height='9' rx='2' fill='%2390AACC' opacity='0.6'/%3E%3Crect x='30' y='96' width='13' height='9' rx='2' fill='%2390AACC' opacity='0.6'/%3E%3Crect x='13' y='109' width='30' height='7' rx='2' fill='%2390AACC' opacity='0.4'/%3E%3Crect x='96' y='96' width='13' height='9' rx='2' fill='%2390AACC' opacity='0.6'/%3E%3Crect x='113' y='96' width='13' height='9' rx='2' fill='%2390AACC' opacity='0.6'/%3E%3Crect x='96' y='109' width='30' height='7' rx='2' fill='%2390AACC' opacity='0.4'/%3E%3C/svg%3E");
-        background-repeat: repeat;
-        font-family: 'Inter', sans-serif !important;
-    }
+    /* ===== MAIN BACKGROUND ===== */
+    {bg_css}
     
     /* Remove default Streamlit styling */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
+    #MainMenu {{visibility: hidden;}}
+    footer {{visibility: hidden;}}
+    header {{visibility: hidden;}}
     
     /* ===== FULL WIDTH LAYOUT ===== */
-    .block-container {
+    .block-container {{
         padding: 1.5rem 2rem !important;
         max-width: 100% !important;
-    }
+    }}
     
-    @media (min-width: 1400px) {
-        .block-container {
+    @media (min-width: 1400px) {{
+        .block-container {{
             padding: 1.5rem 4rem !important;
-        }
-    }
+        }}
+    }}
     
     /* ===== HEADER ===== */
-    .header-container {
+    .header-container {{
         background: linear-gradient(135deg, 
             rgba(35, 45, 85, 0.95) 0%, 
             rgba(25, 35, 60, 0.98) 50%, 
@@ -341,68 +363,68 @@ st.markdown("""
         box-shadow: 
             0 4px 30px rgba(99, 130, 255, 0.15),
             0 1px 3px rgba(0, 0, 0, 0.3);
-    }
+    }}
     
-    .header-left {
+    .header-left {{
         display: flex;
         align-items: center;
         gap: 20px;
-    }
+    }}
     
-    .header-logo {
+    .header-logo {{
         height: 50px;
         width: auto;
-    }
+    }}
     
-    .header-text {
+    .header-text {{
         display: flex;
         flex-direction: column;
         gap: 4px;
-    }
+    }}
     
-    .title-main {
+    .title-main {{
         color: #FFFFFF;
         font-weight: 600;
         font-size: 1.5em;
         margin: 0;
         letter-spacing: 0.5px;
         text-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
-    }
+    }}
     .title-main,
-    .title-main span {
+    .title-main span {{
     color: #FFFFFF !important;
-    }
-    .subtitle-main {
+    }}
+    .subtitle-main {{
         color: #C7D2FE;
         font-size: 0.9em;
         margin: 0;
         font-weight: 400;
-    }
+    }}
     
-    .header-divider {
+    .header-divider {{
         height: 2px;
         background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.6), transparent);
         margin-top: 16px;
         opacity: 0.6;
-    }
+    }}
     
     /* ===== CARDS ===== */
-    .glass-card {
+    .glass-card {{
         background: linear-gradient(145deg, 
             rgba(45, 55, 95, 0.55) 0%, 
             rgba(28, 38, 70, 0.85) 40%, 
             rgba(20, 30, 60, 0.90) 100%);
         border-radius: 14px;
-        padding: 12px 16px;
-        margin-bottom: 12px;
+        padding: 14px 18px;
+        margin-bottom: 14px;
         box-shadow: 
             0 4px 25px rgba(0, 0, 0, 0.35),
             0 0 25px rgba(99, 130, 255, 0.12);
         border: 1px solid rgba(99, 130, 255, 0.12);
         border-top: 2px solid rgba(99, 130, 255, 0.30);
-    }
+    }}
     
-    .card-title {
+    .card-title {{
         color: #E5E7EB;
         font-weight: 600;
         font-size: 0.95em;
@@ -411,17 +433,17 @@ st.markdown("""
         display: flex;
         align-items: center;
         gap: 10px;
-        margin-bottom: 8px;
-        padding-bottom: 6px;
+        margin-bottom: 10px;
+        padding-bottom: 8px;
         border-bottom: 1px solid rgba(139, 92, 246, 0.15);
-    }
+    }}
     
-    .card-icon {
+    .card-icon {{
         font-size: 1.1em;
-    }
+    }}
     
     /* ===== BUTTONS ===== */
-    div.stButton > button {
+    div.stButton > button {{
         background: linear-gradient(145deg, rgba(35, 45, 75, 0.8), rgba(20, 28, 50, 0.95)) !important;
         border-radius: 8px !important;
         height: 52px !important;
@@ -433,26 +455,25 @@ st.markdown("""
         border: 1px solid rgba(99, 130, 255, 0.25) !important;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
         transition: all 0.2s ease !important;
-    }
+    }}
     
-    div.stButton > button:hover {
+    div.stButton > button:hover {{
         border-color: #6382FF !important;
         box-shadow: 0 0 15px rgba(99, 130, 255, 0.35), 0 0 0 1px #6382FF !important;
         transform: translateY(-1px) !important;
-    }
+    }}
     
-    div.stButton > button:active {
+    div.stButton > button:active {{
         transform: translateY(0) !important;
-    }
+    }}
     
-    /* Processing state */
-    div.stButton > button:disabled {
+    div.stButton > button:disabled {{
         opacity: 0.6 !important;
         cursor: not-allowed !important;
-    }
+    }}
     
     /* Link Button (Planilla MEC) */
-    .stLinkButton > a {
+    .stLinkButton > a {{
         background: linear-gradient(145deg, rgba(35, 45, 75, 0.8), rgba(20, 28, 50, 0.95)) !important;
         border-radius: 8px !important;
         height: 52px !important;
@@ -468,17 +489,17 @@ st.markdown("""
         align-items: center !important;
         justify-content: center !important;
         text-decoration: none !important;
-    }
+    }}
     
-    .stLinkButton > a:hover {
+    .stLinkButton > a:hover {{
         border-color: #6382FF !important;
         box-shadow: 0 0 15px rgba(99, 130, 255, 0.35), 0 0 0 1px #6382FF !important;
         transform: translateY(-1px) !important;
         text-decoration: none !important;
-    }
+    }}
     
     /* ===== FILE UPLOADER ===== */
-    [data-testid="stFileUploader"] {
+    [data-testid="stFileUploader"] {{
         background: linear-gradient(145deg, 
             rgba(30, 27, 55, 0.5) 0%, 
             rgba(17, 24, 39, 0.7) 100%);
@@ -486,64 +507,62 @@ st.markdown("""
         padding: 16px;
         border: 1px dashed rgba(139, 92, 246, 0.3);
         transition: all 0.2s ease;
-    }
+    }}
     
-    [data-testid="stFileUploader"]:hover {
+    [data-testid="stFileUploader"]:hover {{
         border-color: #8B5CF6;
         background: linear-gradient(145deg, 
             rgba(139, 92, 246, 0.1) 0%, 
             rgba(17, 24, 39, 0.8) 100%);
-    }
+    }}
     
-    [data-testid="stFileUploader"] label {
+    [data-testid="stFileUploader"] label {{
         color: #9CA3AF !important;
         font-size: 0.85em !important;
-    }
+    }}
     
-    [data-testid="stFileUploader"] p {
+    [data-testid="stFileUploader"] p {{
         color: #9CA3AF !important;
-    }
+    }}
     
-    [data-testid="stFileUploader"] span {
+    [data-testid="stFileUploader"] span {{
         color: #E5E7EB !important;
-    }
+    }}
     
-    /* File uploader dropzone styling */
-    [data-testid="stFileUploaderDropzone"] {
+    [data-testid="stFileUploaderDropzone"] {{
         background: linear-gradient(145deg, 
             rgba(30, 27, 55, 0.6) 0%, 
             rgba(17, 24, 39, 0.8) 100%) !important;
         border: none !important;
-    }
+    }}
     
-    /* Style the cloud icon and text */
-    [data-testid="stFileUploaderDropzone"] svg {
+    [data-testid="stFileUploaderDropzone"] svg {{
         color: #8B5CF6 !important;
         opacity: 0.7;
-    }
+    }}
     
-    [data-testid="stFileUploaderDropzone"] > div {
+    [data-testid="stFileUploaderDropzone"] > div {{
         color: #9CA3AF !important;
-    }
+    }}
     
-    [data-testid="stFileUploaderDropzone"] small {
+    [data-testid="stFileUploaderDropzone"] small {{
         color: #6B7280 !important;
-    }
+    }}
     
-    [data-testid="stFileUploader"] button {
+    [data-testid="stFileUploader"] button {{
         background: linear-gradient(145deg, rgba(88, 28, 135, 0.4), rgba(17, 24, 39, 0.9)) !important;
         color: #E5E7EB !important;
         border: 1px solid rgba(139, 92, 246, 0.3) !important;
         border-radius: 6px !important;
-    }
+    }}
     
-    [data-testid="stFileUploader"] button:hover {
+    [data-testid="stFileUploader"] button:hover {{
         background: linear-gradient(145deg, rgba(139, 92, 246, 0.3), rgba(17, 24, 39, 0.9)) !important;
         border-color: #8B5CF6 !important;
-    }
+    }}
     
     /* ===== TEXT AREA ===== */
-    .stTextArea textarea {
+    .stTextArea textarea {{
         background: #111827 !important;
         border: 1px solid #1F2937 !important;
         border-radius: 8px !important;
@@ -551,25 +570,25 @@ st.markdown("""
         font-family: 'Inter', sans-serif !important;
         font-size: 0.9em !important;
         padding: 12px !important;
-    }
+    }}
     
-    .stTextArea textarea:focus {
+    .stTextArea textarea:focus {{
         border-color: #B8964A !important;
         box-shadow: 0 0 0 1px #B8964A !important;
-    }
+    }}
     
-    .stTextArea textarea::placeholder {
+    .stTextArea textarea::placeholder {{
         color: #6B7280 !important;
-    }
+    }}
     
-    .stTextArea label {
+    .stTextArea label {{
         color: #E5E7EB !important;
         font-weight: 500 !important;
         font-size: 0.95em !important;
-    }
+    }}
     
     /* ===== METRICS / COUNTERS ===== */
-    .metric-card {
+    .metric-card {{
         background: linear-gradient(145deg, 
             rgba(30, 27, 55, 0.5) 0%, 
             rgba(17, 24, 39, 0.9) 100%);
@@ -578,21 +597,21 @@ st.markdown("""
         text-align: center;
         border: 1px solid rgba(139, 92, 246, 0.15);
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    }
+    }}
     
-    .metric-value {
+    .metric-value {{
         font-family: 'Inter', sans-serif;
         font-weight: 700;
         font-size: 2.5em;
         color: #F1F5F9;
         margin: 0;
-    }
+    }}
     
-    .metric-value-gold {
+    .metric-value-gold {{
         color: #A78BFA;
-    }
+    }}
     
-    .metric-label {
+    .metric-label {{
         font-family: 'Inter', sans-serif;
         font-weight: 500;
         font-size: 0.8em;
@@ -600,9 +619,9 @@ st.markdown("""
         text-transform: uppercase;
         letter-spacing: 1px;
         margin-top: 8px;
-    }
+    }}
     
-    .reset-btn {
+    .reset-btn {{
         background: transparent;
         border: 1px solid rgba(139, 92, 246, 0.2);
         border-radius: 6px;
@@ -612,50 +631,50 @@ st.markdown("""
         cursor: pointer;
         transition: all 0.2s ease;
         margin-left: 8px;
-    }
+    }}
     
-    .reset-btn:hover {
+    .reset-btn:hover {{
         border-color: #8B5CF6;
         color: #8B5CF6;
-    }
+    }}
     
     /* ===== CHARTS ===== */
-    [data-testid="stVegaLiteChart"] {
+    [data-testid="stVegaLiteChart"] {{
         background: transparent;
         border-radius: 8px;
-    }
+    }}
     
     /* ===== ALERTS ===== */
-    .stSuccess {
+    .stSuccess {{
         background: rgba(34, 197, 94, 0.1) !important;
         border: 1px solid rgba(34, 197, 94, 0.3) !important;
         border-radius: 8px !important;
         color: #22C55E !important;
-    }
+    }}
     
-    .stInfo {
+    .stInfo {{
         background: rgba(59, 130, 246, 0.1) !important;
         border: 1px solid rgba(59, 130, 246, 0.3) !important;
         border-radius: 8px !important;
         color: #3B82F6 !important;
-    }
+    }}
     
-    .stWarning {
+    .stWarning {{
         background: rgba(234, 179, 8, 0.1) !important;
         border: 1px solid rgba(234, 179, 8, 0.3) !important;
         border-radius: 8px !important;
         color: #EAB308 !important;
-    }
+    }}
     
-    .stError {
+    .stError {{
         background: rgba(239, 68, 68, 0.1) !important;
         border: 1px solid rgba(239, 68, 68, 0.3) !important;
         border-radius: 8px !important;
         color: #EF4444 !important;
-    }
+    }}
     
     /* ===== DOWNLOAD BUTTON ===== */
-    .stDownloadButton > button {
+    .stDownloadButton > button {{
         background: linear-gradient(135deg, #8B5CF6, #7C3AED) !important;
         border: none !important;
         border-radius: 8px !important;
@@ -665,61 +684,61 @@ st.markdown("""
         letter-spacing: 1px !important;
         box-shadow: 0 2px 12px rgba(139, 92, 246, 0.4) !important;
         transition: all 0.2s ease !important;
-    }
+    }}
     
-    .stDownloadButton > button:hover {
+    .stDownloadButton > button:hover {{
         transform: translateY(-1px) !important;
         box-shadow: 0 4px 20px rgba(139, 92, 246, 0.5) !important;
-    }
+    }}
     
     /* ===== SPINNER ===== */
-    .stSpinner > div {
+    .stSpinner > div {{
         border-color: #8B5CF6 transparent transparent transparent !important;
-    }
+    }}
     
     /* ===== SCROLLBAR ===== */
-    ::-webkit-scrollbar {
+    ::-webkit-scrollbar {{
         width: 8px;
         height: 8px;
-    }
+    }}
     
-    ::-webkit-scrollbar-track {
+    ::-webkit-scrollbar-track {{
         background: #0F172A;
-    }
+    }}
     
-    ::-webkit-scrollbar-thumb {
+    ::-webkit-scrollbar-thumb {{
         background: #1F2937;
         border-radius: 4px;
-    }
+    }}
     
-    ::-webkit-scrollbar-thumb:hover {
+    ::-webkit-scrollbar-thumb:hover {{
         background: #374151;
-    }
+    }}
     
     /* ===== DONUT CHART LEGEND ===== */
-    .donut-legend {
+    .donut-legend {{
         display: flex;
         flex-direction: column;
         gap: 8px;
         padding: 10px;
-    }
+    }}
     
-    .legend-item {
+    .legend-item {{
         display: flex;
         align-items: center;
         gap: 8px;
         font-size: 0.8em;
         color: #9CA3AF;
-    }
+    }}
     
-    .legend-dot {
+    .legend-dot {{
         width: 10px;
         height: 10px;
         border-radius: 50%;
-    }
+    }}
     
     /* ===== FOOTER ===== */
-    .footer {
+    .footer {{
         text-align: center;
         padding: 20px;
         color: #A5B4FC;
@@ -727,22 +746,12 @@ st.markdown("""
         letter-spacing: 1px;
         border-top: 1px solid rgba(139, 92, 246, 0.15);
         margin-top: 24px;
-    }
+    }}
     
     </style>
 """, unsafe_allow_html=True)
 
 # --- LOADING SCREEN ---
-import base64
-
-def get_image_base64(image_path):
-    try:
-        with open(image_path, "rb") as img_file:
-            return base64.b64encode(img_file.read()).decode()
-    except:
-        return None
-
-# Show loading screen briefly
 loading_logo_base64 = get_image_base64("logo.png.webp")
 if loading_logo_base64:
     st.markdown(f"""
@@ -800,30 +809,25 @@ with col_izq:
     ''', unsafe_allow_html=True)
     archivo_cdp = st.file_uploader("Subir CDP", type=["xlsx"], label_visibility="collapsed", key="cdp_upload")
     
-    # Variables para almacenar datos del CDP
     df_clean = None
     fecha_tit = None
     archivo_cdp_bytes = None
     
     if archivo_cdp:
-        # Leer el archivo como bytes para hashear
         archivo_cdp_bytes = archivo_cdp.read()
-        archivo_cdp.seek(0)  # Resetear el puntero para pd.read_excel
+        archivo_cdp.seek(0)
         
         with st.spinner("Procesando archivo..."):
             df_raw = pd.read_excel(archivo_cdp)
             df_clean, fecha_tit = logic_clientes.motor_limpieza(df_raw)
             
-            # Registrar pedidos para el grafico (evita duplicados)
             datos_actualizados, fue_registrado = registrar_pedidos_cdp(archivo_cdp_bytes, df_clean)
             
-            # Si se registro un nuevo archivo, recargar para actualizar graficos
             if fue_registrado:
                 st.rerun()
         
         st.success(f"CDP CARGADO: {fecha_tit}")
         
-        # PROCESAMIENTO DE BOTONES
         if btn_1:
             with st.spinner("Procesando archivo..."):
                 pdf = logic_clientes.generar_pdf_clientes(df_clean, fecha_tit)
@@ -879,31 +883,23 @@ with col_der:
             <div class="card-title"><span class="card-icon">📈</span> PANEL DE VISUALIZACION</div>
     ''', unsafe_allow_html=True)
     
-    # Calcular fechas de la semana actual
     inicio_semana = hoy_ar - timedelta(days=hoy_ar.weekday())
     fin_semana = inicio_semana + timedelta(days=6)
     
-    # Meses en español para el rango
     MESES_ES = {1: "Ene", 2: "Feb", 3: "Mar", 4: "Abr", 5: "May", 6: "Jun",
                 7: "Jul", 8: "Ago", 9: "Sep", 10: "Oct", 11: "Nov", 12: "Dic"}
     rango_semana = f"Semana {inicio_semana.day}-{MESES_ES[inicio_semana.month]} al {fin_semana.day}-{MESES_ES[fin_semana.month]}"
     
-    # Cargar datos mensuales guardados (recargar para obtener datos actualizados)
     datos_mensuales = cargar_datos_mensuales()
     
-    # Obtener datos de la semana actual
     dias_labels, pedidos_semana = obtener_datos_semana(datos_mensuales, inicio_semana)
     
-    # Calcular total del mes (solo dias con datos reales)
     total_pedidos_mes = calcular_total_mes(datos_mensuales)
     
-    # Obtener pedidos del dia actual desde los datos guardados
     fecha_hoy_str = hoy_ar.strftime("%Y-%m-%d")
     pedidos_dia_actual = datos_mensuales.get("pedidos_por_dia", {}).get(fecha_hoy_str, 0)
     
-    # Si se acaba de cargar un archivo CDP, usar esos datos
     if archivo_cdp and df_clean is not None:
-        # Extraer fecha del archivo para mostrar
         fecha_archivo = extraer_fecha_entrega(df_raw)
         if fecha_archivo:
             fecha_archivo_str = fecha_archivo.strftime("%Y-%m-%d")
@@ -931,11 +927,9 @@ with col_der:
         ''', unsafe_allow_html=True)
     
     with col_n3:
-        # Reset button
         if st.button("⟳", key="reset_counter", help="Reiniciar contador mensual"):
             st.session_state.show_reset_confirm = True
     
-    # Reset confirmation dialog
     if st.session_state.get('show_reset_confirm', False):
         st.warning("¿Estás seguro de reiniciar el contador mensual? Esta acción no es reversible.")
         col_conf1, col_conf2 = st.columns(2)
@@ -958,13 +952,11 @@ with col_der:
         </p>
     ''', unsafe_allow_html=True)
     
-    # Crear DataFrame para el grafico con datos reales
     chart_data = pd.DataFrame({
         'Dia': dias_labels,
         'Pedidos': pedidos_semana
     })
     
-    # Grafico con Altair
     import altair as alt
     
     tiene_datos = any(p > 0 for p in pedidos_semana)
@@ -1120,7 +1112,6 @@ with col_der:
                 </div>
             ''', unsafe_allow_html=True)
     else:
-        # Mostrar leyenda con valores en cero cuando no hay datos
         st.markdown(f'''
             <div class="donut-legend" style="opacity: 0.5;">
                 <div class="legend-item">
@@ -1138,7 +1129,6 @@ with col_der:
             </div>
         ''', unsafe_allow_html=True)
     
-    # Mensaje informativo si no hay archivo cargado
     if not archivo_cdp:
         st.info("Suba un archivo de CDP para visualizar las metricas del dia")
     
