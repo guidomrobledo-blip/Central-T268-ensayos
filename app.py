@@ -1,96 +1,105 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
+from datetime import datetime
 import logic_clientes, logic_faltantes, logic_domicilios, logic_informe
-import os
-import json
-import hashlib
 
-# --- CONFIGURACION ---
+# --- CONFIG ---
 st.set_page_config(
-    page_title="Panel Operaciones Online Carrefour",
-    page_icon="🛒",
-    layout="wide",
-    initial_sidebar_state="collapsed"
+    page_title="Panel Operaciones Carrefour",
+    layout="wide"
 )
 
-# --- ESTILO CORPORATIVO LIMPIO ---
+# --- CSS AVANZADO ---
 st.markdown("""
 <style>
-/* Fondo general */
+
+/* GENERAL */
 html, body, .stApp {
-    background-color: #f5f7fa;
+    margin: 0;
+    padding: 0;
     font-family: 'Segoe UI', sans-serif;
 }
 
-/* Títulos */
-h1 {
-    font-size: 2.2rem;
-    font-weight: 600;
-    color: #1f3c88;
-    margin-bottom: 0.5rem;
+/* HERO */
+.hero {
+    background: #0d2c6c;
+    padding: 80px 60px;
+    color: white;
 }
 
-h2 {
-    font-size: 1.4rem;
-    color: #2c3e50;
+.hero h1 {
+    font-size: 48px;
+    margin-bottom: 10px;
 }
 
-/* Cards */
-.block {
+.hero p {
+    font-size: 18px;
+    opacity: 0.9;
+}
+
+/* SECCIONES */
+.section {
+    padding: 60px;
+}
+
+/* CARD */
+.card {
     background: white;
-    padding: 20px;
+    padding: 25px;
     border-radius: 12px;
-    border: 1px solid #e3e6ea;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+/* BOTONES GRID */
+.btn-card {
+    background: #1976d2;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    color: white;
+    font-weight: 500;
+    margin: 10px;
+}
+
+/* TITULOS */
+.section-title {
+    font-size: 28px;
     margin-bottom: 20px;
 }
 
-/* Botones */
-.stButton>button {
-    width: 100%;
-    border-radius: 8px;
-    background-color: #1f3c88;
+/* FONDO AZUL SECCION */
+.blue-section {
+    background: #1565c0;
     color: white;
-    border: none;
-    padding: 10px;
-    font-weight: 500;
 }
 
-.stButton>button:hover {
-    background-color: #163172;
-}
-
-/* File uploader */
-.stFileUploader {
-    border: 1px dashed #ccd1d9;
-    padding: 20px;
-    border-radius: 10px;
-    background-color: #fafbfc;
-}
-
-/* Separación */
-.section {
-    margin-top: 30px;
-}
 </style>
 """, unsafe_allow_html=True)
 
-# --- HEADER ---
-st.markdown("<h1>Panel de Operaciones Online</h1>", unsafe_allow_html=True)
-st.markdown("Gestión y procesamiento de pedidos Carrefour", unsafe_allow_html=True)
+# --- HERO ---
+st.markdown("""
+<div class="hero">
+    <h1>Panel de Operaciones</h1>
+    <p>Carrefour Online - Tienda 268</p>
+    <p>Abril 2026</p>
+</div>
+""", unsafe_allow_html=True)
 
-# --- BLOQUE PRINCIPAL ---
-st.markdown('<div class="block">', unsafe_allow_html=True)
-st.markdown("### Procesador de planillas")
+# --- PROCESADOR ---
+st.markdown('<div class="section">', unsafe_allow_html=True)
 
-archivo = st.file_uploader("Cargar archivo", type=["xlsx", "csv"])
+st.markdown('<div class="card">', unsafe_allow_html=True)
+st.markdown('<div class="section-title">Procesador de Planillas</div>', unsafe_allow_html=True)
+
+archivo = st.file_uploader("Cargar archivo Excel", type=["xlsx", "csv"])
 
 st.markdown('</div>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
-# --- ACCESOS RÁPIDOS ---
-st.markdown('<div class="section"></div>', unsafe_allow_html=True)
-st.markdown("## Funciones")
+# --- FUNCIONES ---
+st.markdown('<div class="section blue-section">', unsafe_allow_html=True)
+
+st.markdown('<div class="section-title">Funciones rápidas</div>', unsafe_allow_html=True)
 
 col1, col2, col3, col4 = st.columns(4)
 
@@ -118,8 +127,12 @@ with col4:
             df = pd.read_excel(archivo)
             logic_informe.procesar(df)
 
-# --- RESULTADOS / ESPACIO FUTURO ---
-st.markdown('<div class="section"></div>', unsafe_allow_html=True)
-st.markdown("## Resultados")
+st.markdown('</div>', unsafe_allow_html=True)
 
-st.info("Aquí se visualizarán los resultados del procesamiento.")
+# --- RESULTADOS ---
+st.markdown('<div class="section">', unsafe_allow_html=True)
+st.markdown('<div class="section-title">Resultados</div>', unsafe_allow_html=True)
+
+st.info("Aquí se mostrarán los resultados del procesamiento")
+
+st.markdown('</div>', unsafe_allow_html=True)
