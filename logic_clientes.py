@@ -127,7 +127,6 @@ def generar_pdf_clientes(df):
 
         df_render = df.copy()
 
-        # ✅ ORDEN FINAL DEFINITIVO
         orden_final = {
             "Domicilio | 10:00 a 14:00": 1,
             "Domicilio | 14:00 a 18:00": 2,
@@ -150,13 +149,22 @@ def generar_pdf_clientes(df):
 
         df_render = df_render.sort_values('orden_final')
 
-        def insertar_filas_vacias():
-            for _ in range(3):
+        # ✅ NUEVA FUNCIÓN FLEXIBLE
+        def insertar_filas_vacias(cantidad=3):
+            for _ in range(cantidad):
                 if (pdf.h - pdf.get_y()) < 20:
                     pdf.add_page()
                 for w in widths:
                     pdf.cell(w, row_height, "", border=1)
                 pdf.ln()
+
+        # ✅ GRUPOS QUE LLEVAN ESPACIO
+        grupos_con_espacio = [
+            "Domicilio | 10:00 a 14:00",
+            "Domicilio | 14:00 a 18:00",
+            "Domicilio | 18:00 a 21:00",
+            "Drive/Sucursal | 18:00 a 21:00"
+        ]
 
         for _, row in df_render.iterrows():
 
@@ -167,11 +175,8 @@ def generar_pdf_clientes(df):
             llave_resumen = f"Domicilio | {banda}" if modalidad == "Domicilio" else f"Drive/Suc | {banda}"
 
             if llave != ultima_llave:
-                if (
-                    ultima_modalidad == "Domicilio" and
-                    ultima_banda in ["10:00 a 14:00", "14:00 a 18:00"]
-                ):
-                    insertar_filas_vacias()
+                if ultima_llave in grupos_con_espacio:
+                    insertar_filas_vacias(2)
 
             if (pdf.h - pdf.get_y()) < (row_height + 3):
                 pdf.add_page()
@@ -202,11 +207,9 @@ def generar_pdf_clientes(df):
             pdf.cell(widths[6], row_height, str(row['TEL. PARTICULAR'])[:13], border=1)
             pdf.ln()
 
-        if (
-            ultima_modalidad == "Domicilio" and
-            ultima_banda in ["10:00 a 14:00", "14:00 a 18:00"]
-        ):
-            insertar_filas_vacias()
+        # ✅ APLICAR TAMBIÉN AL FINAL
+        if ultima_llave in grupos_con_espacio:
+            insertar_filas_vacias(2)
 
         if (pdf.h - pdf.get_y()) < 35:
             pdf.add_page()
@@ -220,7 +223,6 @@ def generar_pdf_clientes(df):
 
         pdf.set_font("Times", '', font_size + 0.5)
 
-        # ✅ ORDEN DEL RESUMEN
         orden_resumen = [
             "Domicilio | 10:00 a 14:00",
             "Domicilio | 14:00 a 18:00",
