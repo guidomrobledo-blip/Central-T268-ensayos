@@ -9,25 +9,12 @@ class PlanillaPDFSeguridad(FPDF):
     def __init__(self, fecha_tit):
         super().__init__(orientation='P', unit='mm', format='A4')
         
-        # 🔧 Normalizar fecha a formato dd/mm/aa
-        if isinstance(fecha_tit, datetime):
-            self.fecha_tit = fecha_tit.strftime("%d/%m/%y")
-        else:
-            try:
-                fecha_obj = datetime.strptime(fecha_tit, "%m/%d/%Y")
-                self.fecha_tit = fecha_obj.strftime("%d/%m/%y")
-            except:
-                try:
-                    fecha_obj = datetime.strptime(fecha_tit, "%m/%d/%y")
-                    self.fecha_tit = fecha_obj.strftime("%d/%m/%y")
-                except:
-                    self.fecha_tit = fecha_tit
+        self.fecha_tit = fecha_tit
 
         self.set_margins(left=7, top=10, right=7)
         self.set_auto_page_break(auto=True, margin=8)
 
     def header(self):
-        # 👉 SOLO en la primera página
         if self.page_no() == 1:
             if os.path.exists('carrefour+logo.png'):
                 self.image('carrefour+logo.png', x=7, y=8, w=55)
@@ -46,7 +33,6 @@ class PlanillaPDFSeguridad(FPDF):
 
             self.ln(6)
 
-        # 👉 SIEMPRE encabezado de tabla
         self.set_fill_color(240, 240, 240)
         self.set_font("Times", 'B', 9)
 
@@ -56,7 +42,6 @@ class PlanillaPDFSeguridad(FPDF):
             "PICKEADOR", "Art."
         ]
 
-        # 🔧 Nuevos anchos ajustados
         widths = [27, 20, 21, 22, 22, 44, 28, 12]
 
         for i, col in enumerate(cols):
@@ -72,7 +57,6 @@ def generar_pdf_seguridad(df, fecha_tit):
         pdf = PlanillaPDFSeguridad(fecha_tit)
         pdf.add_page()
 
-        # 🔧 mismos anchos que header
         widths = [27, 20, 21, 22, 22, 44, 28, 12]
 
         ultima_llave = None
@@ -83,30 +67,45 @@ def generar_pdf_seguridad(df, fecha_tit):
 
         df_render = df.copy()
 
-        def orden_banda(banda):
-            orden = {
-                "10:00 a 14:00": 1,
-                "14:00 a 18:00": 2,
-                "09:00 a 13:00": 3,
-                "13:00 a 18:00": 4,
-                "18:00 a 21:00": 5
-            }
-            return orden.get(banda, 99)
+        # ✅ ORDEN FINAL (igual que clientes)
+        orden_final = {
+            "Domicilio | 10:00 a 14:00": 1,
+            "Domicilio | 14:00 a 18:00": 2,
+            "Domicilio | 18:00 a 21:00": 3,
+            "Drive/Sucursal | 09:00 a 13:00": 4,
+            "Drive/Sucursal | 13:00 a 18:00": 5,
+            "Drive/Sucursal | 18:00 a 21:00": 6
+        }
 
-        df_render['orden_banda'] = df_render['BANDA HORARIA'].apply(orden_banda)
-        df_render['orden_tipo'] = df_render['MODALIDAD DE ENTREGA'].apply(
-            lambda x: 0 if x == "Domicilio" else 1
+        def obtener_llave(row):
+            if row['MODALIDAD DE ENTREGA'] == "Domicilio":
+                return f"Domicilio | {row['BANDA HORARIA']}"
+            else:
+                return f"Drive/Sucursal | {row['BANDA HORARIA']}"
+
+        df_render['orden_final'] = df_render.apply(
+            lambda r: orden_final.get(obtener_llave(r), 99),
+            axis=1
         )
 
-        df_render = df_render.sort_values(['orden_banda', 'orden_tipo'])
+        df_render = df_render.sort_values('orden_final')
 
-        def insertar_filas_vacias():
-            for _ in range(3):
+        # ✅ FUNCIÓN FLEXIBLE
+        def insertar_filas_vacias(cantidad=3):
+            for _ in range(cantidad):
                 if (pdf.h - pdf.get_y()) < 20:
                     pdf.add_page()
                 for w in widths:
                     pdf.cell(w, row_height, "", border=1)
                 pdf.ln()
+
+        # ✅ GRUPOS CON ESPACIO
+        grupos_con_espacio = [
+            "Domicilio | 10:00 a 14:00",
+            "Domicilio | 14:00 a 18:00",
+            "Domicilio | 18:00 a 21:00",
+            "Drive/Sucursal | 18:00 a 21:00"
+        ]
 
         for _, row in df_render.iterrows():
             modalidad = row['MODALIDAD DE ENTREGA']
@@ -118,11 +117,8 @@ def generar_pdf_seguridad(df, fecha_tit):
             resumen[llave_resumen] = resumen.get(llave_resumen, 0) + 1
 
             if llave != ultima_llave:
-                if (
-                    ultima_modalidad == "Domicilio" and
-                    ultima_banda in ["10:00 a 14:00", "14:00 a 18:00"]
-                ):
-                    insertar_filas_vacias()
+                if ultima_llave in grupos_con_espacio:
+                    insertar_filas_vacias(2)
 
                 pdf.set_fill_color(64, 64, 64)
                 pdf.set_text_color(255, 255, 255)
@@ -150,11 +146,9 @@ def generar_pdf_seguridad(df, fecha_tit):
 
             pdf.ln()
 
-        if (
-            ultima_modalidad == "Domicilio" and
-            ultima_banda in ["10:00 a 14:00", "14:00 a 18:00"]
-        ):
-            insertar_filas_vacias()
+        # ✅ APLICAR TAMBIÉN AL FINAL
+        if ultima_llave in grupos_con_espacio:
+            insertar_filas_vacias(2)
 
         if (pdf.h - pdf.get_y()) < 35:
             pdf.add_page()
@@ -168,8 +162,19 @@ def generar_pdf_seguridad(df, fecha_tit):
 
         pdf.set_font("Times", '', font_size + 0.5)
 
-        for b, t in resumen.items():
-            pdf.cell(0, 4.5, f"{b}: [{t}]", ln=True, align='R')
+        # ✅ ORDEN DEL RESUMEN
+        orden_resumen = [
+            "Domicilio | 10:00 a 14:00",
+            "Domicilio | 14:00 a 18:00",
+            "Domicilio | 18:00 a 21:00",
+            "Drive/Suc | 09:00 a 13:00",
+            "Drive/Suc | 13:00 a 18:00",
+            "Drive/Suc | 18:00 a 21:00"
+        ]
+
+        for clave in orden_resumen:
+            if clave in resumen:
+                pdf.cell(0, 4.5, f"{clave}: [{resumen[clave]}]", ln=True, align='R')
 
         pdf.set_font("Times", 'B', font_size + 2)
         pdf.cell(0, 8, f"TOTAL: [{len(df)}]", ln=True, align='R')
