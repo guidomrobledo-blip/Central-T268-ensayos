@@ -813,19 +813,20 @@ with col_izq:
     fecha_tit = None
     archivo_cdp_bytes = None
     
-    if archivo_cdp:
-        # Leer el archivo como bytes para hashear
-        archivo_cdp_bytes = archivo_cdp.read()
-        archivo_cdp.seek(0)  # Resetear el puntero para pd.read_excel
-        
+if archivo_cdp:
+
+    # Leer archivo como bytes
+    archivo_cdp_bytes = archivo_cdp.read()
+    archivo_cdp.seek(0)
+
     with st.spinner("Procesando archivo..."):
-    
+
         df_raw = pd.read_excel(archivo_cdp)
-    
+
         # =========================================
         # NORMALIZADOR JANIS
         # =========================================
-    
+
         columnas_janis = [
             "displayId",
             "shippingType",
@@ -836,19 +837,19 @@ with col_izq:
             "receiverFullname",
             "receiverPhone"
         ]
-    
+
         es_janis = all(col in df_raw.columns for col in columnas_janis)
-    
+
         if es_janis:
-    
+
             df_janis = pd.DataFrame()
-    
+
             # NUMERO PEDIDO
             df_janis["NUMERO PEDIDO"] = df_raw["displayId"]
-    
+
             # MODALIDAD
             df_janis["MODALIDAD DE ENTREGA"] = df_raw["shippingType"]
-    
+
             # DIRECCION
             df_janis["DIRECCIÓN"] = (
                 df_raw["dropoffStreet"].fillna("").astype(str)
@@ -857,28 +858,28 @@ with col_izq:
                 + " "
                 + df_raw["dropoffComplement"].fillna("").astype(str)
             )
-    
+
             # FECHA ENTREGA
             df_janis["FECHA ENTREGA"] = pd.to_datetime(
                 df_raw["scheduleStart"],
                 errors="coerce"
             )
-    
+
             # BANDA HORARIA
             hora_inicio = pd.to_datetime(
                 df_raw["scheduleStart"],
                 errors="coerce"
             ).dt.strftime("%H:%M")
-    
+
             hora_fin = pd.to_datetime(
                 df_raw["scheduleEnd"],
                 errors="coerce"
             ).dt.strftime("%H:%M")
-    
+
             df_janis["BANDA HORARIA"] = (
                 hora_inicio + " a " + hora_fin
             )
-    
+
             # NOMBRE / APELLIDO
             nombres = (
                 df_raw["receiverFullname"]
@@ -886,66 +887,97 @@ with col_izq:
                 .astype(str)
                 .str.split(" ", n=1, expand=True)
             )
-    
+
             df_janis["NOMBRE"] = nombres[0]
-    
+
             if nombres.shape[1] > 1:
                 df_janis["APELLIDO"] = nombres[1]
             else:
                 df_janis["APELLIDO"] = ""
-    
+
             # TELEFONO
             df_janis["TELEFONO"] = df_raw["receiverPhone"]
-    
-            # reemplazar dataframe original
+
+            # Reemplazar dataframe original
             df_raw = df_janis.copy()
-    
+
         # =========================================
         # LIMPIEZA FINAL
         # =========================================
-    
+
         df_raw['FECHA ENTREGA'] = pd.to_datetime(
             df_raw['FECHA ENTREGA'],
             dayfirst=True,
             errors='coerce'
         )
-    
+
         df_clean, fecha_tit = logic_clientes.motor_limpieza(df_raw)
-    
+
         # Registrar pedidos para el grafico
         datos_actualizados, fue_registrado = registrar_pedidos_cdp(
             archivo_cdp_bytes,
             df_clean
         )
-            
-            # Si se registro un nuevo archivo, recargar para actualizar graficos
-            if fue_registrado:
-                st.rerun()
-        
-        st.success(f"CDP CARGADO: {fecha_tit}")
-        
-        # PROCESAMIENTO DE BOTONES
-        if btn_1:
-            with st.spinner("Procesando archivo..."):
-                pdf = logic_clientes.generar_pdf_clientes(df_clean)
-            st.download_button("DESCARGAR PDF CLIENTES", bytes(pdf), f"Clientes_{fecha_tit}.pdf", use_container_width=True)
-        if btn_seguridad:
-            with st.spinner("Procesando archivo..."):
-                pdf = logic_seguridad.generar_pdf_seguridad(df_clean, fecha_tit)
-            st.download_button(
-                "DESCARGAR PDF SEGURIDAD",
-                bytes(pdf),
-                f"Seguridad_{fecha_tit}.pdf",
-                use_container_width=True
-            )    
-        if btn_2:
-            with st.spinner("Procesando archivo..."):
-                pdf = logic_faltantes.generar_pdf_faltantes(df_clean, fecha_tit)
-            st.download_button("DESCARGAR PDF FALTANTES", bytes(pdf), f"Faltantes_{fecha_tit}.pdf", use_container_width=True)
-        if btn_3:
-            with st.spinner("Procesando archivo..."):
-                pdf = logic_domicilios.generar_pdf_domicilios(df_clean, fecha_tit)
-            st.download_button("DESCARGAR PDF DOMICILIOS", bytes(pdf), f"Domicilios_{fecha_tit}.pdf", use_container_width=True)
+
+        # Evitar duplicados
+        if fue_registrado:
+            st.rerun()
+
+    st.success(f"CDP CARGADO: {fecha_tit}")
+
+    # BOTONES
+    if btn_1:
+        with st.spinner("Procesando archivo..."):
+            pdf = logic_clientes.generar_pdf_clientes(df_clean)
+
+        st.download_button(
+            "DESCARGAR PDF CLIENTES",
+            bytes(pdf),
+            f"Clientes_{fecha_tit}.pdf",
+            use_container_width=True
+        )
+
+    if btn_seguridad:
+        with st.spinner("Procesando archivo..."):
+            pdf = logic_seguridad.generar_pdf_seguridad(
+                df_clean,
+                fecha_tit
+            )
+
+        st.download_button(
+            "DESCARGAR PDF SEGURIDAD",
+            bytes(pdf),
+            f"Seguridad_{fecha_tit}.pdf",
+            use_container_width=True
+        )
+
+    if btn_2:
+        with st.spinner("Procesando archivo..."):
+            pdf = logic_faltantes.generar_pdf_faltantes(
+                df_clean,
+                fecha_tit
+            )
+
+        st.download_button(
+            "DESCARGAR PDF FALTANTES",
+            bytes(pdf),
+            f"Faltantes_{fecha_tit}.pdf",
+            use_container_width=True
+        )
+
+    if btn_3:
+        with st.spinner("Procesando archivo..."):
+            pdf = logic_domicilios.generar_pdf_domicilios(
+                df_clean,
+                fecha_tit
+            )
+
+        st.download_button(
+            "DESCARGAR PDF DOMICILIOS",
+            bytes(pdf),
+            f"Domicilios_{fecha_tit}.pdf",
+            use_container_width=True
+        )
 
     st.markdown('</div>', unsafe_allow_html=True)
     
