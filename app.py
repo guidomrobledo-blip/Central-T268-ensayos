@@ -845,7 +845,7 @@ if archivo_cdp:
             df_janis = pd.DataFrame()
 
             # NUMERO PEDIDO
-            df_janis["NUMERO PEDIDO"] = df_raw["displayId"]
+            df_janis["NUMERO PEDIDO"] = df_raw["orderCommerceIds"]
 
             # MODALIDAD
             df_janis["MODALIDAD DE ENTREGA"] = df_raw["shippingType"]
