@@ -902,6 +902,11 @@ if archivo_cdp:
             df_janis["TELEFONO CLIENTE"] = (
                 df_raw["receiverPhone"]
             )
+            
+            # TEL. PARTICULAR
+            df_janis["TEL. PARTICULAR"] = (
+                df_raw["receiverPhone"]
+            )
 
             # Reemplazar dataframe original
             df_raw = df_janis.copy()
