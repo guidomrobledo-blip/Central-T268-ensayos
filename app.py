@@ -818,14 +818,105 @@ with col_izq:
         archivo_cdp_bytes = archivo_cdp.read()
         archivo_cdp.seek(0)  # Resetear el puntero para pd.read_excel
         
-        with st.spinner("Procesando archivo..."):
-            df_raw = pd.read_excel(archivo_cdp)
-            st.write(df_raw.columns.tolist())
-            df_raw['FECHA ENTREGA'] = pd.to_datetime(df_raw['FECHA ENTREGA'], dayfirst=True, errors='coerce')
-            df_clean, fecha_tit = logic_clientes.motor_limpieza(df_raw)
-            
-            # Registrar pedidos para el grafico (evita duplicados)
-            datos_actualizados, fue_registrado = registrar_pedidos_cdp(archivo_cdp_bytes, df_clean)
+    with st.spinner("Procesando archivo..."):
+    
+        df_raw = pd.read_excel(archivo_cdp)
+    
+        # =========================================
+        # NORMALIZADOR JANIS
+        # =========================================
+    
+        columnas_janis = [
+            "displayId",
+            "shippingType",
+            "dropoffStreet",
+            "dropoffNumber",
+            "scheduleStart",
+            "scheduleEnd",
+            "receiverFullname",
+            "receiverPhone"
+        ]
+    
+        es_janis = all(col in df_raw.columns for col in columnas_janis)
+    
+        if es_janis:
+    
+            df_janis = pd.DataFrame()
+    
+            # NUMERO PEDIDO
+            df_janis["NUMERO PEDIDO"] = df_raw["displayId"]
+    
+            # MODALIDAD
+            df_janis["MODALIDAD DE ENTREGA"] = df_raw["shippingType"]
+    
+            # DIRECCION
+            df_janis["DIRECCIÓN"] = (
+                df_raw["dropoffStreet"].fillna("").astype(str)
+                + " "
+                + df_raw["dropoffNumber"].fillna("").astype(str)
+                + " "
+                + df_raw["dropoffComplement"].fillna("").astype(str)
+            )
+    
+            # FECHA ENTREGA
+            df_janis["FECHA ENTREGA"] = pd.to_datetime(
+                df_raw["scheduleStart"],
+                errors="coerce"
+            )
+    
+            # BANDA HORARIA
+            hora_inicio = pd.to_datetime(
+                df_raw["scheduleStart"],
+                errors="coerce"
+            ).dt.strftime("%H:%M")
+    
+            hora_fin = pd.to_datetime(
+                df_raw["scheduleEnd"],
+                errors="coerce"
+            ).dt.strftime("%H:%M")
+    
+            df_janis["BANDA HORARIA"] = (
+                hora_inicio + " a " + hora_fin
+            )
+    
+            # NOMBRE / APELLIDO
+            nombres = (
+                df_raw["receiverFullname"]
+                .fillna("")
+                .astype(str)
+                .str.split(" ", n=1, expand=True)
+            )
+    
+            df_janis["NOMBRE"] = nombres[0]
+    
+            if nombres.shape[1] > 1:
+                df_janis["APELLIDO"] = nombres[1]
+            else:
+                df_janis["APELLIDO"] = ""
+    
+            # TELEFONO
+            df_janis["TELEFONO"] = df_raw["receiverPhone"]
+    
+            # reemplazar dataframe original
+            df_raw = df_janis.copy()
+    
+        # =========================================
+        # LIMPIEZA FINAL
+        # =========================================
+    
+        df_raw['FECHA ENTREGA'] = pd.to_datetime(
+            df_raw['FECHA ENTREGA'],
+            dayfirst=True,
+            errors='coerce'
+        )
+    
+        df_clean, fecha_tit = logic_clientes.motor_limpieza(df_raw)
+    
+        # Registrar pedidos para el grafico
+        datos_actualizados, fue_registrado = registrar_pedidos_cdp(
+            archivo_cdp_bytes,
+            df_clean
+        )
             
             # Si se registro un nuevo archivo, recargar para actualizar graficos
             if fue_registrado:
