@@ -820,6 +820,7 @@ with col_izq:
         
         with st.spinner("Procesando archivo..."):
             df_raw = pd.read_excel(archivo_cdp)
+            st.write(df_raw.columns.tolist())
             df_raw['FECHA ENTREGA'] = pd.to_datetime(df_raw['FECHA ENTREGA'], dayfirst=True, errors='coerce')
             df_clean, fecha_tit = logic_clientes.motor_limpieza(df_raw)
             
