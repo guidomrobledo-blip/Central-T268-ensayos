@@ -880,13 +880,24 @@ if archivo_cdp:
                 hora_inicio + " a " + hora_fin
             )
 
-             # NOMBRE CLIENTE
-            df_janis["NOMBRE CLIENTE"] = (
+            # SEPARAR NOMBRE Y APELLIDO
+            nombres = (
                 df_raw["receiverFullname"]
                 .fillna("")
                 .astype(str)
+                .str.strip()
+                .str.split(" ", n=1, expand=True)
             )
-    
+            
+            # NOMBRE CLIENTE
+            df_janis["NOMBRE CLIENTE"] = nombres[0]
+            
+            # APELLIDO CLIENTE
+            if nombres.shape[1] > 1:
+                df_janis["APELLIDO CLIENTE"] = nombres[1]
+            else:
+                df_janis["APELLIDO CLIENTE"] = ""
+            
             # TELEFONO CLIENTE
             df_janis["TELEFONO CLIENTE"] = (
                 df_raw["receiverPhone"]
