@@ -862,13 +862,14 @@ if archivo_cdp:
             )
             
             # DIRECCION
-            df_janis["DIRECCIÓN"] = (
-                df_raw["dropoffStreet"].fillna("").astype(str)
-                + " "
-                + df_raw["dropoffNumber"].fillna("").astype(str)
-                + " "
-                + df_raw["dropoffComplement"].fillna("").astype(str)
-            )
+            # CALLE
+            df_janis["CALLE"] = df_raw["dropoffStreet"]
+            
+            # NUMERO
+            df_janis["NUMERO"] = df_raw["dropoffNumber"]
+            
+            # DEPTO
+            df_janis["DEPTO"] = df_raw["dropoffComplement"]
 
             # FECHA ENTREGA
             df_janis["FECHA ENTREGA"] = pd.to_datetime(
