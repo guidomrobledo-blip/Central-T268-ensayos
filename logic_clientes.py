@@ -17,34 +17,6 @@ def motor_limpieza(df):
     except:
         fecha_tit_str = str(fecha_raw)
 
-    def procesar_apellido_ajustado(texto):
-
-        if pd.isna(texto) or str(texto).strip() == "":
-            return ""
-
-        partes = str(texto).split()
-
-        excepciones = ['DA', 'DE', 'DI', 'DO', 'DU', 'LA', 'DEL', 'DAS', 'DOS']
-
-        resultado = []
-        i = 0
-
-        while i < len(partes) and len(resultado) < 2:
-
-            pal_upper = partes[i].upper()
-
-            if pal_upper in excepciones and i + 1 < len(partes):
-
-                resultado.append(f"{partes[i].title()} {partes[i+1].title()}")
-                i += 2
-
-            else:
-
-                resultado.append(partes[i].title())
-                i += 1
-
-        return " ".join(resultado)
-
     def formatear_direccion_pro(row):
 
         calle = str(row.get('CALLE', '')).strip().title()
@@ -132,11 +104,13 @@ def motor_limpieza(df):
 
     df['DIRECCIÓN'] = df.apply(formatear_direccion_pro, axis=1)
 
-    df['NOMBRE'] = df['NOMBRE CLIENTE'].apply(
-        lambda n: str(n).split()[0].title() if pd.notna(n) else ""
+    df['CLIENTE'] = (
+        df['NOMBRE CLIENTE']
+        .fillna("")
+        .astype(str)
+        .str.title()
+        .str.strip()
     )
-
-    df['APELLIDO'] = df['APELLIDO CLIENTE'].apply(procesar_apellido_ajustado)
 
     mapping = {
         "Domicilio | 10:00 a 14:00": 1,
@@ -203,13 +177,12 @@ class PlanillaPDF(FPDF):
             "Nro PEDIDO",
             "MODALIDAD",
             "BANDA HORARIA",
-            "NOMBRE",
-            "APELLIDO",
+            "CLIENTE",
             "DIRECCIÓN",
             "TELÉFONO"
         ]
 
-        widths = [28, 20, 32, 22, 22, 47, 25]
+        widths = [28, 20, 32, 44, 47, 25]
 
         for i, col in enumerate(cols):
             self.cell(widths[i], 7.5, col, border=1, fill=True, align='C')
@@ -235,7 +208,7 @@ def generar_pdf_clientes(df):
 
     pdf.add_page()
 
-    widths = [28, 20, 32, 22, 22, 47, 25]
+    widths = [28, 20, 32, 44, 47, 25]
 
     ultima_llave = None
 
@@ -353,26 +326,19 @@ def generar_pdf_clientes(df):
         pdf.cell(
             widths[3],
             row_height,
-            limpiar_texto_pdf(str(row['NOMBRE'])[:12]),
+            limpiar_texto_pdf(str(row['CLIENTE'])[:28]),
             border=1
         )
 
         pdf.cell(
             widths[4],
             row_height,
-            limpiar_texto_pdf(str(row['APELLIDO'])[:12]),
-            border=1
-        )
-
-        pdf.cell(
-            widths[5],
-            row_height,
             limpiar_texto_pdf(str(row['DIRECCIÓN'])[:31]),
             border=1
         )
 
         pdf.cell(
-            widths[6],
+            widths[5],
             row_height,
             limpiar_texto_pdf(str(row['TEL. PARTICULAR'])[:13]),
             border=1
