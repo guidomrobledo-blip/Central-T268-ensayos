@@ -852,8 +852,15 @@ if archivo_cdp:
                 .str[0]
             )
             # MODALIDAD
-            df_janis["MODALIDAD DE ENTREGA"] = df_raw["shippingType"]
-
+            df_janis["MODALIDAD DE ENTREGA"] = (
+                df_raw["carrierName"]
+                .replace({
+                    "Envío a Domicilio 0268 - Hiper Rosario Pueyrredón": "Domicilio",
+                    "Drive 0268 - Hiper Rosario Pueyrredón": "Drive",
+                    "Retiro en Tienda 0268 - Hiper Rosario Pueyrredón": "Sucursal"
+                })
+            )
+            
             # DIRECCION
             df_janis["DIRECCIÓN"] = (
                 df_raw["dropoffStreet"].fillna("").astype(str)
