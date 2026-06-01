@@ -1066,15 +1066,15 @@ use_container_width=True
 )
     if btn_agregar_manual:
 
-    st.session_state.pedidos_manual.append({
-        "direccion": direccion_manual,
-        "pedido": numero_manual,
-        "tipo": tipo_manual,
-        "banda": banda_manual,
-        "estado": "Pendiente"
-    })
-
-    st.success("Pedido agregado")
+        st.session_state.pedidos_manual.append({
+            "direccion": direccion_manual,
+            "pedido": numero_manual,
+            "tipo": tipo_manual,
+            "banda": banda_manual,
+            "estado": "Pendiente"
+        })
+    
+        st.success("Pedido agregado")
 
     if archivo_cdp and df_clean is not None:
 
