@@ -7,6 +7,9 @@ import os
 import json
 import hashlib
 
+if "pedidos_manual" not in st.session_state:
+    st.session_state.pedidos_manual = []
+
 # 🎨 ESTILOS PERSONALIZADOS
 st.markdown("""
 <style>
@@ -1061,6 +1064,17 @@ with col_der:
 "Agregar pedido",
 use_container_width=True
 )
+    if btn_agregar_manual:
+
+    st.session_state.pedidos_manual.append({
+        "direccion": direccion_manual,
+        "pedido": numero_manual,
+        "tipo": tipo_manual,
+        "banda": banda_manual,
+        "estado": "Pendiente"
+    })
+
+    st.success("Pedido agregado")
 
     if archivo_cdp and df_clean is not None:
 
