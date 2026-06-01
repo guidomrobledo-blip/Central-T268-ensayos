@@ -1058,7 +1058,7 @@ with col_der:
             st.write(
                 f"**{pedido}** | {direccion}"
             )
-
+      st.divider()
     else:
 
         st.info(
