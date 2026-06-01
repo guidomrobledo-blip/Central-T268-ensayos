@@ -1038,23 +1038,26 @@ with col_der:
 
         for banda in bandas:
 
-            st.subheader(f"📍 {banda}")
+    df_banda = df_rutas[
+        df_rutas["BANDA HORARIA"] == banda
+    ]
 
-            df_banda = df_rutas[
-                df_rutas["BANDA HORARIA"] == banda
-            ]
+    cantidad = len(df_banda)
 
-            for _, row in df_banda.iterrows():
+    with st.expander(
+        f"📍 {banda} ({cantidad})",
+        expanded=False
+    ):
 
-                pedido = str(row["NUMERO PEDIDO"])
+        for _, row in df_banda.iterrows():
 
-                direccion = str(row["DIRECCIÓN"])
+            pedido = str(row["NUMERO PEDIDO"])
 
-                st.write(
-                    f"**{pedido}**  |  {direccion}"
-                )
+            direccion = str(row["DIRECCIÓN"])
 
-            st.divider()
+            st.write(
+                f"**{pedido}** | {direccion}"
+            )
 
     else:
 
