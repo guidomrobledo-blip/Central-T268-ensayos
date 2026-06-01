@@ -1106,6 +1106,29 @@ use_container_width=True
                     "ESTADO": ["Pendiente"] * len(df_banda)
                 })
                 
+                manuales_banda = []
+                
+                for pedido in st.session_state.pedidos_manual:
+                
+                    if pedido["banda"] == banda:
+                
+                        manuales_banda.append({
+                            "ORDEN": "-",
+                            "DIRECCIÓN": pedido["direccion"],
+                            "PEDIDO": pedido["pedido"],
+                            "TIPO": pedido["tipo"],
+                            "ESTADO": pedido["estado"]
+                        })
+                
+                if manuales_banda:
+                
+                    tabla_manual = pd.DataFrame(manuales_banda)
+                
+                    tabla_banda = pd.concat(
+                        [tabla_banda, tabla_manual],
+                        ignore_index=True
+                    )
+                
                 st.dataframe(
                     tabla_banda,
                     use_container_width=True,
