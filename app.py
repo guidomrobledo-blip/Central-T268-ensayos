@@ -1049,15 +1049,19 @@ with col_der:
                 expanded=False
             ):
         
-                for _, row in df_banda.iterrows():
-        
-                    pedido = str(row["NUMERO PEDIDO"])
-        
-                    direccion = str(row["DIRECCIÓN"])
-        
-                    st.write(
-                        f"**{pedido}** | {direccion}"
-                    )
+                tabla_banda = pd.DataFrame({
+                    "ORDEN": ["-"] * len(df_banda),
+                    "DIRECCIÓN": df_banda["DIRECCIÓN"],
+                    "PEDIDO": df_banda["NUMERO PEDIDO"],
+                    "TIPO": ["Ecommerce"] * len(df_banda),
+                    "ESTADO": ["Pendiente"] * len(df_banda)
+                })
+                
+                st.dataframe(
+                    tabla_banda,
+                    use_container_width=True,
+                    hide_index=True
+                )
               
     else:
 
