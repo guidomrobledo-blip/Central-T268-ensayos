@@ -1029,37 +1029,37 @@ with col_der:
     
     st.subheader("➕ Agregar pedido manual")
     
-        direccion_manual = st.text_input(
-        "Dirección",
-        key="direccion_manual"
-    )
-        numero_manual = st.text_input(
-        "Número de pedido",
-        key="numero_manual"
-    )
-        tipo_manual = st.selectbox(
-        "Tipo",
-        [
-            "Caja",
-            "Reclamo",
-            "Reprogramado",
-            "NonFood",
-            "Transferencia"
-        ],
-        key="tipo_manual"
-    )
-        banda_manual = st.selectbox(
-        "Banda horaria",
-        [
-            "10:00 a 14:00",
-            "14:00 a 18:00",
-            "18:00 a 21:00"
-        ],
-        key="banda_manual"
-    )
-        btn_agregar_manual = st.button(
-    "Agregar pedido",
-    use_container_width=True
+    direccion_manual = st.text_input(
+    "Dirección",
+    key="direccion_manual"
+)
+    numero_manual = st.text_input(
+    "Número de pedido",
+    key="numero_manual"
+)
+    tipo_manual = st.selectbox(
+    "Tipo",
+    [
+        "Caja",
+        "Reclamo",
+        "Reprogramado",
+        "NonFood",
+        "Transferencia"
+    ],
+    key="tipo_manual"
+)
+    banda_manual = st.selectbox(
+    "Banda horaria",
+    [
+        "10:00 a 14:00",
+        "14:00 a 18:00",
+        "18:00 a 21:00"
+    ],
+    key="banda_manual"
+)
+    btn_agregar_manual = st.button(
+"Agregar pedido",
+use_container_width=True
 )
 
     if archivo_cdp and df_clean is not None:
