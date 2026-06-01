@@ -1018,277 +1018,52 @@ if archivo_cdp:
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_der:
-    # --- VISUALIZATION PANEL ---
-    st.markdown('''
-        <div class="glass-card">
-            <div class="card-title"><span class="card-icon">📈</span> PANEL DE VISUALIZACION</div>
-    ''', unsafe_allow_html=True)
-    
-    # Calcular fechas de la semana actual
-    inicio_semana = hoy_ar - timedelta(days=hoy_ar.weekday())
-    fin_semana = inicio_semana + timedelta(days=6)
-    
-    # Meses en español para el rango
-    MESES_ES = {1: "Ene", 2: "Feb", 3: "Mar", 4: "Abr", 5: "May", 6: "Jun",
-                7: "Jul", 8: "Ago", 9: "Sep", 10: "Oct", 11: "Nov", 12: "Dic"}
-    rango_semana = f"Semana {inicio_semana.day}-{MESES_ES[inicio_semana.month]} al {fin_semana.day}-{MESES_ES[fin_semana.month]}"
-    
-    # Cargar datos mensuales guardados (recargar para obtener datos actualizados)
-    datos_mensuales = cargar_datos_mensuales()
-    
-    # Obtener datos de la semana actual
-    dias_labels, pedidos_semana = obtener_datos_semana(datos_mensuales, inicio_semana)
-    
-    # Calcular total del mes (solo dias con datos reales)
-    total_pedidos_mes = calcular_total_mes(datos_mensuales)
-    
-    # Obtener pedidos del dia actual desde los datos guardados
-    fecha_hoy_str = hoy_ar.strftime("%Y-%m-%d")
-    pedidos_dia_actual = datos_mensuales.get("pedidos_por_dia", {}).get(fecha_hoy_str, 0)
-    
-    # Si se acaba de cargar un archivo CDP, usar esos datos
-    if archivo_cdp and df_clean is not None:
-        # Extraer fecha del archivo para mostrar
-        fecha_archivo = extraer_fecha_entrega(df_raw)
-        if fecha_archivo:
-            fecha_archivo_str = fecha_archivo.strftime("%Y-%m-%d")
-            pedidos_dia_actual = datos_mensuales.get("pedidos_por_dia", {}).get(fecha_archivo_str, len(df_clean))
-    
-    # --- COUNTERS ROW ---
-    col_n1, col_n2, col_n3 = st.columns([1, 1, 0.3])
-    
-    with col_n1:
-        valor_dia = pedidos_dia_actual if pedidos_dia_actual > 0 else "--"
-        st.markdown(f'''
-            <div class="metric-card">
-                <p class="metric-value">{valor_dia}</p>
-                <p class="metric-label">Pedidos del Dia</p>
-            </div>
-        ''', unsafe_allow_html=True)
-    
-    with col_n2:
-        valor_mes = total_pedidos_mes if total_pedidos_mes > 0 else "--"
-        st.markdown(f'''
-            <div class="metric-card">
-                <p class="metric-value metric-value-gold">{valor_mes}</p>
-                <p class="metric-label">Total Mes</p>
-            </div>
-        ''', unsafe_allow_html=True)
-    
-    with col_n3:
-        # Reset button
-        if st.button("⟳", key="reset_counter", help="Reiniciar contador mensual"):
-            st.session_state.show_reset_confirm = True
-    
-    # Reset confirmation dialog
-    if st.session_state.get('show_reset_confirm', False):
-        st.warning("¿Estás seguro de reiniciar el contador mensual? Esta acción no es reversible.")
-        col_conf1, col_conf2 = st.columns(2)
-        with col_conf1:
-            if st.button("Confirmar", key="confirm_reset"):
-                reiniciar_contador_mensual()
-                st.session_state.show_reset_confirm = False
-                st.rerun()
-        with col_conf2:
-            if st.button("Cancelar", key="cancel_reset"):
-                st.session_state.show_reset_confirm = False
-                st.rerun()
-    
-    st.write("")
-    
-    # --- WEEKLY CHART ---
-    st.markdown(f'''
-        <p style="color: #9CA3AF; font-size: 0.8em; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">
-            {rango_semana}
-        </p>
-    ''', unsafe_allow_html=True)
-    
-    # Crear DataFrame para el grafico con datos reales
-    chart_data = pd.DataFrame({
-        'Dia': dias_labels,
-        'Pedidos': pedidos_semana
-    })
-    
-    # Grafico con Altair
-    import altair as alt
-    
-    tiene_datos = any(p > 0 for p in pedidos_semana)
-    opacidad_barras = 1.0 if tiene_datos else 0.3
-    
-    chart = alt.Chart(chart_data).mark_bar(
-        cornerRadiusTopLeft=4,
-        cornerRadiusTopRight=4,
-        color='#c6a769',
-        opacity=opacidad_barras,
-        width=20
-    ).encode(
-        x=alt.X('Dia:N', sort=None, axis=alt.Axis(
-            labelColor='#9CA3AF',
-            labelAngle=0,
-            labelFontSize=11,
-            title=None,
-            tickColor='#1F2937',
-            domainColor='#1F2937'
-        )),
-        y=alt.Y('Pedidos:Q', axis=alt.Axis(
-            labelColor='#9CA3AF',
-            gridColor='#1F2937',
-            title=None,
-            tickColor='#1F2937',
-            domainColor='#1F2937'
-        )),
-        tooltip=['Dia', 'Pedidos']
-    ).properties(
-        height=150
-    ).configure(
-        background='transparent'
-    ).configure_view(
-        strokeWidth=0
-    )
-    
-    st.altair_chart(chart, use_container_width=True)
-    
-    st.write("")
-    
-    # --- MONTHLY EVOLUTION CHART ---
-    st.markdown('''
-        <p style="color: #9CA3AF; font-size: 0.8em; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">
-            Evolucion Mensual
-        </p>
-    ''', unsafe_allow_html=True)
-    
-    dias_mes_labels, pedidos_mes = obtener_datos_mes(datos_mensuales)
-    
-    chart_mes_data = pd.DataFrame({
-        'Dia': dias_mes_labels,
-        'Pedidos': pedidos_mes
-    })
-    
-    tiene_datos_mes = any(p > 0 for p in pedidos_mes)
-    
-    line_chart = alt.Chart(chart_mes_data).mark_line(
-        color='#A78BFA',
-        strokeWidth=2,
-        opacity=1.0 if tiene_datos_mes else 0.3
-    ).encode(
-        x=alt.X('Dia:O', axis=alt.Axis(
-            labelColor='#9CA3AF',
-            labelAngle=0,
-            labelFontSize=9,
-            title=None,
-            tickColor='#1F2937',
-            domainColor='#1F2937',
-            values=list(range(1, len(dias_mes_labels)+1, 5))
-        )),
-        y=alt.Y('Pedidos:Q', axis=alt.Axis(
-            labelColor='#9CA3AF',
-            gridColor='#1F2937',
-            title=None,
-            tickColor='#1F2937',
-            domainColor='#1F2937'
-        ))
-    )
-    
-    points = alt.Chart(chart_mes_data[chart_mes_data['Pedidos'] > 0] if tiene_datos_mes else chart_mes_data).mark_circle(
-        color='#A78BFA',
-        size=40
-    ).encode(
-        x=alt.X('Dia:O'),
-        y=alt.Y('Pedidos:Q'),
-        tooltip=['Dia', 'Pedidos']
-    )
-    
-    combined_chart = (line_chart + points).properties(
-        height=120
-    ).configure(
-        background='transparent'
-    ).configure_view(
-        strokeWidth=0
-    )
-    
-    st.altair_chart(combined_chart, use_container_width=True)
-    
-    # --- DONUT CHART (Modalidades) ---
-    st.write("")
-    st.markdown('''
-        <p style="color: #9CA3AF; font-size: 0.8em; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">
-            Modalidades de Entrega (Acumulado Mensual)
-        </p>
-    ''', unsafe_allow_html=True)
-    
-    modalidades = datos_mensuales.get("modalidades", {"DOMICILIOS": 0, "DRIVE": 0, "SUCURSAL": 0})
-    total_modalidades = sum(modalidades.values())
-    
-    if total_modalidades > 0:
-        col_donut, col_legend = st.columns([1, 1])
-        
-        with col_donut:
-            donut_data = pd.DataFrame({
-                'Modalidad': list(modalidades.keys()),
-                'Cantidad': list(modalidades.values())
-            })
-            
-            donut_chart = alt.Chart(donut_data).mark_arc(innerRadius=40, outerRadius=60).encode(
-                theta=alt.Theta(field="Cantidad", type="quantitative"),
-                color=alt.Color(field="Modalidad", type="nominal",
-                    scale=alt.Scale(
-                        domain=["DOMICILIOS", "DRIVE", "SUCURSAL"],
-                        range=["#A78BFA", "#6B7280", "#E5E7EB"]
-                    ),
-                    legend=None
-                ),
-                tooltip=['Modalidad', 'Cantidad']
-            ).properties(
-                height=140,
-                width=140
-            ).configure(
-                background='transparent'
-            )
-            
-            st.altair_chart(donut_chart, use_container_width=True)
-        
-        with col_legend:
-            st.markdown(f'''
-                <div class="donut-legend">
-                    <div class="legend-item">
-                        <span class="legend-dot" style="background: #A78BFA;"></span>
-                        <span>DOMICILIOS ({modalidades.get("DOMICILIOS", 0)})</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-dot" style="background: #6B7280;"></span>
-                        <span>DRIVE ({modalidades.get("DRIVE", 0)})</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-dot" style="background: #E5E7EB;"></span>
-                        <span>SUCURSAL ({modalidades.get("SUCURSAL", 0)})</span>
-                    </div>
-                </div>
-            ''', unsafe_allow_html=True)
-    else:
-        # Mostrar leyenda con valores en cero cuando no hay datos
-        st.markdown(f'''
-            <div class="donut-legend" style="opacity: 0.5;">
-                <div class="legend-item">
-                    <span class="legend-dot" style="background: #A78BFA;"></span>
-                    <span>DOMICILIOS (0)</span>
-                </div>
-                <div class="legend-item">
-                    <span class="legend-dot" style="background: #6B7280;"></span>
-                    <span>DRIVE (0)</span>
-                </div>
-                <div class="legend-item">
-                    <span class="legend-dot" style="background: #E5E7EB;"></span>
-                    <span>SUCURSAL (0)</span>
-                </div>
-            </div>
-        ''', unsafe_allow_html=True)
-    
-    # Mensaje informativo si no hay archivo cargado
-    if not archivo_cdp:
-        st.info("Suba un archivo de CDP para visualizar las metricas del dia")
-    
-    st.markdown('</div>', unsafe_allow_html=True)
 
+    st.markdown("""
+    <div class="glass-card">
+        <div class="card-title">
+            <span class="card-icon">🚚</span>
+            PANEL DE RUTEO
+        </div>
+    """, unsafe_allow_html=True)
+
+    if archivo_cdp and df_clean is not None:
+
+        df_rutas = df_clean[
+            df_clean["MODALIDAD DE ENTREGA"]
+            .str.contains("Domicilio", case=False, na=False)
+        ].copy()
+
+        bandas = sorted(df_rutas["BANDA HORARIA"].dropna().unique())
+
+        for banda in bandas:
+
+            st.subheader(f"📍 {banda}")
+
+            df_banda = df_rutas[
+                df_rutas["BANDA HORARIA"] == banda
+            ]
+
+            for _, row in df_banda.iterrows():
+
+                pedido = str(row["NUMERO PEDIDO"])
+
+                direccion = str(row["DIRECCIÓN"])
+
+                st.write(
+                    f"**{pedido}**  |  {direccion}"
+                )
+
+            st.divider()
+
+    else:
+
+        st.info(
+            "Cargue un archivo CDP para visualizar los domicilios."
+        )
+
+    st.markdown("</div>", unsafe_allow_html=True)
+    
 # --- FOOTER ---
 st.markdown('''
     <div class="footer">
