@@ -1031,39 +1031,54 @@ with col_der:
     """, unsafe_allow_html=True)
     
     st.subheader("➕ Agregar pedido manual")
+
+    col1, col2, col3, col4, col5 = st.columns(
+        [3, 1.2, 1.4, 1.5, 1.2]
+    )
     
-    direccion_manual = st.text_input(
-    "Dirección",
-    key="direccion_manual"
-)
-    numero_manual = st.text_input(
-    "Número de pedido",
-    key="numero_manual"
-)
-    tipo_manual = st.selectbox(
-    "Tipo",
-    [
-        "Caja",
-        "Reclamo",
-        "Reprogramado",
-        "NonFood",
-        "Transferencia"
-    ],
-    key="tipo_manual"
-)
-    banda_manual = st.selectbox(
-    "Banda horaria",
-    [
-        "10:00 a 14:00",
-        "14:00 a 18:00",
-        "18:00 a 21:00"
-    ],
-    key="banda_manual"
-)
-    btn_agregar_manual = st.button(
-"Agregar pedido",
-use_container_width=True
-)
+    with col1:
+        direccion_manual = st.text_input(
+            "Dirección",
+            key="direccion_manual"
+        )
+    
+    with col2:
+        numero_manual = st.text_input(
+            "Pedido",
+            key="numero_manual"
+        )
+    
+    with col3:
+        tipo_manual = st.selectbox(
+            "Tipo",
+            [
+                "Caja",
+                "Reclamo",
+                "Reprogramado",
+                "NonFood",
+                "Transferencia"
+            ],
+            key="tipo_manual"
+        )
+    
+    with col4:
+        banda_manual = st.selectbox(
+            "Banda",
+            [
+                "10:00 a 14:00",
+                "14:00 a 18:00",
+                "18:00 a 21:00"
+            ],
+            key="banda_manual"
+        )
+    
+    with col5:
+        st.write("")
+        st.write("")
+        btn_agregar_manual = st.button(
+            "➕ Agregar",
+            use_container_width=True
+        )
     if btn_agregar_manual:
         prefijos = {
             "Caja": "LC-",
