@@ -1033,7 +1033,7 @@ with col_der:
     st.subheader("➕ Agregar pedido manual")
 
     col1, col2, col3, col4, col5 = st.columns(
-        [3, 1.2, 1.4, 1.5, 1.2]
+        [2.5, 1.7, 1.4, 1.5, 1.2]
     )
     
     with col1:
@@ -1044,7 +1044,7 @@ with col_der:
     
     with col2:
         numero_manual = st.text_input(
-            "Pedido",
+            "Nro Pedido",
             key="numero_manual"
         )
     
@@ -1076,7 +1076,7 @@ with col_der:
         st.write("")
         st.write("")
         btn_agregar_manual = st.button(
-            "➕ Agregar",
+            "Agregar",
             use_container_width=True
         )
     if btn_agregar_manual:
