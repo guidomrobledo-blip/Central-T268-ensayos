@@ -28,9 +28,9 @@ st.markdown("""
 
 /* Botón agregar pedido */
 div.stButton > button {
-    height: 40px;
-    margin-top: 0px;
-    font-size: 13px;
+    height: 35px;
+    margin-top: 5px;
+    font-size: 10px;
 }
 </style>
 """, unsafe_allow_html=True)
