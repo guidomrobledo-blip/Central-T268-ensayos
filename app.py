@@ -1065,15 +1065,15 @@ with col_der:
 use_container_width=True
 )
     if btn_agregar_manual:
-    prefijos = {
-        "Caja": "LC",
-        "Reclamo": "R",
-        "Reprogramado": "RP",
-        "NonFood": "NF",
-        "Transferencia": "TR"
-    }
-
-    pedido_final = f"{prefijos[tipo_manual]}{numero_manual}"
+        prefijos = {
+            "Caja": "LC",
+            "Reclamo": "R",
+            "Reprogramado": "RP",
+            "NonFood": "NF",
+            "Transferencia": "TR"
+        }
+    
+        pedido_final = f"{prefijos[tipo_manual]}{numero_manual}"
 
         st.session_state.pedidos_manual.append({
             "direccion": direccion_manual,
