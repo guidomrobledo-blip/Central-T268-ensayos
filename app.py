@@ -28,8 +28,8 @@ st.markdown("""
 
 /* Botón agregar pedido */
 div.stButton > button {
-    height: 35px;
-    margin-top: 5px;
+    height: 30px;
+    margin-top: 10px;
     font-size: 10px;
 }
 </style>
@@ -1079,6 +1079,7 @@ with col_der:
         )
     
     with col5:
+        st.write("")
         btn_agregar_manual = st.button(
             "Agregar",
             use_container_width=True
