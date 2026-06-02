@@ -26,6 +26,12 @@ st.markdown("""
     color: #A78BFA !important;
 }
 
+/* Botón agregar pedido */
+div.stButton > button {
+    height: 40px;
+    margin-top: 0px;
+    font-size: 13px;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -1073,8 +1079,6 @@ with col_der:
         )
     
     with col5:
-        st.write("")
-        st.write("")
         btn_agregar_manual = st.button(
             "Agregar",
             use_container_width=True
