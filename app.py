@@ -1130,53 +1130,6 @@ with col_der:
                     f"⚠️ El pedido ya existe en la banda "
                     f"{pedido_existente['banda']}"
                 )
-        
-                col_a, col_b = st.columns(2)
-        
-                with col_a:
-                    mover = st.button(
-                        "Mover pedido",
-                        key="btn_mover_pedido"
-                    )
-                
-                with col_b:
-                    cancelar = st.button(
-                        "Cancelar",
-                        key="btn_cancelar_mover"
-                    )
-                
-                if cancelar:
-                
-                    st.session_state.pedido_a_mover = None
-                
-                    st.rerun()
-
-                if mover:
-
-                    st.error("ENTRÓ EN MOVER")
-                    datos = st.session_state.pedido_a_mover
-                
-                    st.session_state.pedidos_manual = [
-                
-                        p for p in st.session_state.pedidos_manual
-                
-                        if p["pedido"] != datos["pedido"]
-                
-                    ]
-                
-                    st.session_state.pedidos_manual.append({
-                
-                        "direccion": datos["direccion"],
-                        "pedido": datos["pedido"],
-                        "tipo": datos["tipo"],
-                        "banda": datos["banda_nueva"],
-                        "estado": "Pendiente"
-                
-                    })
-                
-                    st.session_state.pedido_a_mover = None
-                
-                    st.rerun()
     
         else:
     
@@ -1192,6 +1145,31 @@ with col_der:
 
     st.write("DEBUG:")
     st.write(st.session_state.pedido_a_mover)
+
+    if st.session_state.pedido_a_mover:
+
+        datos = st.session_state.pedido_a_mover
+    
+        if datos["banda_actual"] != datos["banda_nueva"]:
+    
+            st.warning(
+                f"⚠️ El pedido ya existe en la banda "
+                f"{datos['banda_actual']}"
+            )
+    
+            col_a, col_b = st.columns(2)
+    
+            with col_a:
+                mover = st.button(
+                    "Mover pedido",
+                    key="btn_mover_pedido"
+                )
+    
+            with col_b:
+                cancelar = st.button(
+                    "Cancelar",
+                    key="btn_cancelar_mover"
+                )
 
     if archivo_cdp and df_clean is not None:
 
