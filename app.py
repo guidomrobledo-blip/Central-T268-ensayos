@@ -1152,7 +1152,8 @@ with col_der:
                     st.rerun()
 
                 if mover:
-        
+
+                    st.error("ENTRÓ EN MOVER")
                     datos = st.session_state.pedido_a_mover
                 
                     st.session_state.pedidos_manual = [
