@@ -1118,10 +1118,32 @@ with col_der:
                 "banda_nueva": banda_manual
             }
         
-            st.warning(
-                f"⚠️ El pedido ya existe en la banda "
-                f"{pedido_existente['banda']}"
-            )
+            if pedido_existente["banda"] == banda_manual:
+        
+                st.warning(
+                    "⚠️ El pedido ya existe en esta banda horaria."
+                )
+        
+            else:
+        
+                st.warning(
+                    f"⚠️ El pedido ya existe en la banda "
+                    f"{pedido_existente['banda']}"
+                )
+        
+                col_a, col_b = st.columns(2)
+        
+                with col_a:
+                    st.button(
+                        "Mover pedido",
+                        key="btn_mover_pedido"
+                    )
+        
+                with col_b:
+                    st.button(
+                        "Cancelar",
+                        key="btn_cancelar_mover"
+                    )
     
         else:
     
