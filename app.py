@@ -9,6 +9,9 @@ import hashlib
 
 if "pedidos_manual" not in st.session_state:
     st.session_state.pedidos_manual = []
+    
+if "pedido_a_mover" not in st.session_state:
+    st.session_state.pedido_a_mover = None
 
 # 🎨 ESTILOS PERSONALIZADOS
 st.markdown("""
@@ -1106,7 +1109,15 @@ with col_der:
                 break
     
         if pedido_existente:
-    
+
+            st.session_state.pedido_a_mover = {
+                "pedido": pedido_final,
+                "direccion": direccion_manual,
+                "tipo": tipo_manual,
+                "banda_actual": pedido_existente["banda"],
+                "banda_nueva": banda_manual
+            }
+        
             st.warning(
                 f"⚠️ El pedido ya existe en la banda "
                 f"{pedido_existente['banda']}"
