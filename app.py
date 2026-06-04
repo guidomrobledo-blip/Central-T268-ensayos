@@ -1117,19 +1117,6 @@ with col_der:
                 "banda_actual": pedido_existente["banda"],
                 "banda_nueva": banda_manual
             }
-        
-            if pedido_existente["banda"] == banda_manual:
-        
-                st.warning(
-                    "⚠️ El pedido ya existe en esta banda horaria."
-                )
-        
-            else:
-        
-                st.warning(
-                    f"⚠️ El pedido ya existe en la banda "
-                    f"{pedido_existente['banda']}"
-                )
     
         else:
     
@@ -1143,14 +1130,17 @@ with col_der:
     
             st.success("Pedido agregado")
 
-    st.write("DEBUG:")
-    st.write(st.session_state.pedido_a_mover)
-
     if st.session_state.pedido_a_mover:
 
         datos = st.session_state.pedido_a_mover
     
-        if datos["banda_actual"] != datos["banda_nueva"]:
+        if datos["banda_actual"] == datos["banda_nueva"]:
+    
+            st.warning(
+                "⚠️ El pedido ya existe en esta banda horaria."
+            )
+    
+        else:
     
             st.warning(
                 f"⚠️ El pedido ya existe en la banda "
@@ -1170,37 +1160,35 @@ with col_der:
                     "Cancelar",
                     key="btn_cancelar_mover"
                 )
-
+    
             if cancelar:
-        
+    
                 st.session_state.pedido_a_mover = None
-            
+    
                 st.rerun()
-        
+    
             if mover:
-            
-                datos = st.session_state.pedido_a_mover
-            
+    
                 st.session_state.pedidos_manual = [
-            
+    
                     p for p in st.session_state.pedidos_manual
-            
+    
                     if p["pedido"] != datos["pedido"]
-            
+    
                 ]
-            
+    
                 st.session_state.pedidos_manual.append({
-            
+    
                     "direccion": datos["direccion"],
                     "pedido": datos["pedido"],
                     "tipo": datos["tipo"],
                     "banda": datos["banda_nueva"],
                     "estado": "Pendiente"
-            
+    
                 })
-            
+    
                 st.session_state.pedido_a_mover = None
-            
+    
                 st.rerun()
 
     if archivo_cdp and df_clean is not None:
