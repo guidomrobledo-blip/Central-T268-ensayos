@@ -1134,16 +1134,22 @@ with col_der:
                 col_a, col_b = st.columns(2)
         
                 with col_a:
-                    st.button(
+                    mover = st.button(
                         "Mover pedido",
                         key="btn_mover_pedido"
                     )
-        
+                
                 with col_b:
-                    st.button(
+                    cancelar = st.button(
                         "Cancelar",
                         key="btn_cancelar_mover"
                     )
+                
+                if cancelar:
+                
+                    st.session_state.pedido_a_mover = None
+                
+                    st.rerun()
     
         else:
     
