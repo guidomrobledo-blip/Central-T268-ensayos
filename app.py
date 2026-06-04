@@ -816,7 +816,7 @@ with col_izq:
     # --- CARD 1: CDP UPLOAD ---
     st.markdown('''
         <div class="glass-card">
-            <div class="card-title"><span class="card-icon">📂</span> CARGAR EXCEL DE CDP</div>
+            <div class="card-title"><span class="card-icon">📂</span> CARGAR EXCEL.JANIS</div>
     ''', unsafe_allow_html=True)
     archivo_cdp = st.file_uploader("Subir CDP", type=["xlsx"], label_visibility="collapsed", key="cdp_upload")
     
