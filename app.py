@@ -1206,10 +1206,15 @@ with col_der:
                 df_rutas["BANDA HORARIA"] == banda
             ]
         
-            cantidad = len(df_banda)
+            cantidad_ecommerce = len(df_banda)
         
+            titulo_banda = f"📍 {banda} ({cantidad})"
+            
+            if cantidad_manuales > 0:
+                titulo_banda += f" [{cantidad_manuales} manuales]"
+            
             with st.expander(
-                f"📍 {banda} ({cantidad})",
+                titulo_banda,
                 expanded=False
             ):
         
@@ -1234,6 +1239,9 @@ with col_der:
                             "TIPO": pedido["tipo"],
                             "ESTADO": pedido["estado"]
                         })
+
+                cantidad_manuales = len(manuales_banda)
+                cantidad = cantidad_ecommerce + cantidad_manuales
                 
                 if manuales_banda:
                 
