@@ -1086,43 +1086,43 @@ with col_der:
         )
     if btn_agregar_manual:
 
-    prefijos = {
-        "Caja": "LC-",
-        "Reclamo": "R-",
-        "Reprogramado": "RP-",
-        "NonFood": "NF-",
-        "Transferencia": "TR-"
-    }
-
-    pedido_final = f"{prefijos[tipo_manual]}{numero_manual}"
-
-    pedido_existente = None
-
-    for pedido in st.session_state.pedidos_manual:
-
-        if pedido["pedido"] == pedido_final:
-
-            pedido_existente = pedido
-            break
-
-    if pedido_existente:
-
-        st.warning(
-            f"⚠️ El pedido ya existe en la banda "
-            f"{pedido_existente['banda']}"
-        )
-
-    else:
-
-        st.session_state.pedidos_manual.append({
-            "direccion": direccion_manual,
-            "pedido": pedido_final,
-            "tipo": tipo_manual,
-            "banda": banda_manual,
-            "estado": "Pendiente"
-        })
-
-        st.success("Pedido agregado")
+        prefijos = {
+            "Caja": "LC-",
+            "Reclamo": "R-",
+            "Reprogramado": "RP-",
+            "NonFood": "NF-",
+            "Transferencia": "TR-"
+        }
+    
+        pedido_final = f"{prefijos[tipo_manual]}{numero_manual}"
+    
+        pedido_existente = None
+    
+        for pedido in st.session_state.pedidos_manual:
+    
+            if pedido["pedido"] == pedido_final:
+    
+                pedido_existente = pedido
+                break
+    
+        if pedido_existente:
+    
+            st.warning(
+                f"⚠️ El pedido ya existe en la banda "
+                f"{pedido_existente['banda']}"
+            )
+    
+        else:
+    
+            st.session_state.pedidos_manual.append({
+                "direccion": direccion_manual,
+                "pedido": pedido_final,
+                "tipo": tipo_manual,
+                "banda": banda_manual,
+                "estado": "Pendiente"
+            })
+    
+            st.success("Pedido agregado")
 
     if archivo_cdp and df_clean is not None:
 
