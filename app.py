@@ -1225,7 +1225,7 @@ with col_der:
     else:
 
         st.info(
-            "Cargue un archivo CDP para visualizar los domicilios."
+            "Cargue archivo.JANIS para visualizar los domicilios."
         )
 
     st.markdown("</div>", unsafe_allow_html=True)
