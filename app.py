@@ -947,7 +947,7 @@ if archivo_cdp:
         if fue_registrado:
             st.rerun()
 
-    st.success(f"CDP CARGADO: {fecha_tit}")
+    st.success(f"Janis.xlsx CARGADO: {fecha_tit}")
 
     # BOTONES
     if btn_1:
