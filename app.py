@@ -1162,9 +1162,6 @@ with col_der:
             })
     
             st.success("Pedido agregado")
-            
-    st.write("DEBUG:")
-    st.write(st.session_state.pedido_a_mover)
 
     if archivo_cdp and df_clean is not None:
 
