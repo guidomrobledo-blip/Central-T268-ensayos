@@ -1106,7 +1106,14 @@ with col_der:
                 "estado": "Pendiente"
             })
 
-            st.success("Pedido agregado")
+            mensaje = st.empty()
+
+            mensaje.success("Pedido agregado")
+            
+            import time
+            time.sleep(1)
+            
+            mensaje.empty()
             
             st.rerun()
 
