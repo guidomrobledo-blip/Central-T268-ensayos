@@ -1223,9 +1223,11 @@ with col_der:
                     })
             
             cantidad_manuales = len(manuales_banda)
-            cantidad = cantidad_ecommerce + cantidad_manuales
-            
-            titulo_banda = f"📍 {banda} ({cantidad})"
+
+            titulo_banda = (
+                f"📍 {banda} "
+                f"[{cantidad_ecommerce} Ecomm]"
+            )
             
             if cantidad_manuales > 0:
                 titulo_banda += f" [{cantidad_manuales} manuales]"
