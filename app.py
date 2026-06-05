@@ -1208,13 +1208,8 @@ with col_der:
         
             cantidad_ecommerce = len(df_banda)
         
-            titulo_banda = f"📍 {banda} ({cantidad})"
-            
-            if cantidad_manuales > 0:
-                titulo_banda += f" [{cantidad_manuales} manuales]"
-            
             with st.expander(
-                titulo_banda,
+                f"📍 {banda}",
                 expanded=False
             ):
         
