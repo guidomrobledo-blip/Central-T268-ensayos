@@ -1105,7 +1105,9 @@ with col_der:
                 "banda": banda_manual,
                 "estado": "Pendiente"
             })
-    
+
+            st.success("Pedido agregado")
+            
             st.rerun()
 
     if st.session_state.pedido_a_mover:
