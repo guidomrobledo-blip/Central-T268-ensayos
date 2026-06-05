@@ -1008,16 +1008,16 @@ if archivo_cdp:
     st.write("")
 
     # --- CARD 2: INFORME ---
-    st.markdown(f'''
+    # st.markdown(f'''
         <div class="glass-card">
             <div class="card-title"><span class="card-icon">📝</span> PROCESADOR DE INFORME (MAÑANA {manana_txt})</div>
     ''', unsafe_allow_html=True)
-    archivo_inf = st.file_uploader("Subir CDP Manana", type=["xlsx"], key="inf_upload", label_visibility="collapsed")
+    #  archivo_inf = st.file_uploader("Subir CDP Manana", type=["xlsx"], key="inf_upload", label_visibility="collapsed")
     
-    st.markdown('<label style="color: #E5E7EB; font-weight: 500; font-size: 0.95em; display: block; margin-bottom: 8px;">Observaciones</label>', unsafe_allow_html=True)
-    obs = st.text_area("Observaciones:", height=100, placeholder="Ingresa las novedades del turno aqui...", key="obs_area", label_visibility="collapsed")
+    # st.markdown('<label style="color: #E5E7EB; font-weight: 500; font-size: 0.95em; display: block; margin-bottom: 8px;">Observaciones</label>', unsafe_allow_html=True)
+    # obs = st.text_area("Observaciones:", height=100, placeholder="Ingresa las novedades del turno aqui...", key="obs_area", label_visibility="collapsed")
     
-    if btn_4:
+    # if btn_4:
         if archivo_inf:
             with st.spinner("Procesando archivo..."):
                 df_inf_raw = pd.read_excel(archivo_inf, dtype=str)
@@ -1025,9 +1025,9 @@ if archivo_cdp:
                 pdf_bytes = logic_informe.generar_pdf_informe(df_inf_clean, obs)
             st.download_button("DESCARGAR REPORTE FINAL", pdf_bytes, f"Informe_{fecha_inf_tit}.pdf", use_container_width=True)
         else:
-            st.warning("Informe solo procesa archivos con fecha de mañana")
+            # st.warning("Informe solo procesa archivos con fecha de mañana")
     
-    st.markdown('</div>', unsafe_allow_html=True)
+    # st.markdown('</div>', unsafe_allow_html=True)
 
 with col_der:
 
