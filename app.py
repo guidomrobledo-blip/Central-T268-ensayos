@@ -1106,7 +1106,7 @@ with col_der:
                 "estado": "Pendiente"
             })
     
-            st.success("Pedido agregado")
+            st.rerun()
 
     if st.session_state.pedido_a_mover:
 
