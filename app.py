@@ -1207,9 +1207,31 @@ with col_der:
             ]
         
             cantidad_ecommerce = len(df_banda)
+
+            manuales_banda = []
+
+            for pedido in st.session_state.pedidos_manual:
+            
+                if pedido["banda"] == banda:
+            
+                    manuales_banda.append({
+                        "ORDEN": "-",
+                        "DIRECCIÓN": pedido["direccion"],
+                        "PEDIDO": pedido["pedido"],
+                        "TIPO": pedido["tipo"],
+                        "ESTADO": pedido["estado"]
+                    })
+            
+            cantidad_manuales = len(manuales_banda)
+            cantidad = cantidad_ecommerce + cantidad_manuales
+            
+            titulo_banda = f"📍 {banda} ({cantidad})"
+            
+            if cantidad_manuales > 0:
+                titulo_banda += f" [{cantidad_manuales} manuales]"
         
             with st.expander(
-                f"📍 {banda}",
+                titulo_banda,
                 expanded=False
             ):
         
@@ -1220,23 +1242,6 @@ with col_der:
                     "TIPO": ["Ecommerce"] * len(df_banda),
                     "ESTADO": ["Pendiente"] * len(df_banda)
                 })
-                
-                manuales_banda = []
-                
-                for pedido in st.session_state.pedidos_manual:
-                
-                    if pedido["banda"] == banda:
-                
-                        manuales_banda.append({
-                            "ORDEN": "-",
-                            "DIRECCIÓN": pedido["direccion"],
-                            "PEDIDO": pedido["pedido"],
-                            "TIPO": pedido["tipo"],
-                            "ESTADO": pedido["estado"]
-                        })
-
-                cantidad_manuales = len(manuales_banda)
-                cantidad = cantidad_ecommerce + cantidad_manuales
                 
                 if manuales_banda:
                 
